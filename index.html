@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="멋쟁이사자처럼 아이디어톤 제출용 CareLink AI Agent 돌봄 서비스 데모">
+<meta property="og:title" content="CareLink AI Agent — LIKELION Ideathon Demo">
+<meta property="og:description" content="방문돌봄 기록, 보고서, 보호 이벤트를 보여주는 아이디어톤 제출용 인터랙티브 프로토타입">
+<meta property="og:type" content="website">
+<title>CareLink AI Agent — LIKELION Ideathon Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+/* ══ SHARED BASE ══ */
+:root {
+  --g50:#E8F5EE; --g100:#B8E0CC; --g400:#1D9E75; --g600:#0F6E56; --g800:#085041;
+  --a50:#FEF3E2; --a400:#F59E0B; --a600:#B45309;
+  --r50:#FEF2F2; --r200:#FECACA; --r400:#EF4444; --r600:#DC2626;
+  --b50:#EFF6FF; --b400:#3B82F6; --b600:#1D4ED8;
+  --p50:#F5F3FF; --p400:#8B5CF6; --p600:#6D28D9;
+  --bg:#F4F6F4; --surface:#fff; --border:#E4EBE6;
+  --text:#111; --text2:#4B5563; --text3:#9CA3AF;
+  --sidebar-w:220px;
+  --shared-topbar:48px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ══ SHARED TOPBAR ══ */
+.shared-bar{
+  position:fixed;top:0;left:0;right:0;height:var(--shared-topbar);
+  background:var(--g800);display:flex;align-items:center;padding:0 20px;
+  z-index:300;gap:14px;border-bottom:1px solid rgba(255,255,255,.1);
+}
+.sb-logo-area{display:flex;align-items:center;gap:8px}
+.sb-logo-icon{width:26px;height:26px;border-radius:7px;background:var(--g400);display:flex;align-items:center;justify-content:center}
+.sb-logo-name{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sb-logo-sub{font-size:10px;color:rgba(255,255,255,.45);margin-left:2px}
+.mode-tabs{margin-left:auto;display:flex;gap:3px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.mode-tab{padding:5px 16px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.6);background:transparent;transition:all .15s;display:flex;align-items:center;gap:5px}
+.mode-tab.active{background:#fff;color:var(--g600)}
+
+/* ══ CORP VIEW ══ */
+#corp-view{display:flex;padding-top:var(--shared-topbar);min-height:100vh}
+#corp-view .sidebar{width:var(--sidebar-w);background:var(--g800);color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:var(--shared-topbar);left:0;bottom:0;z-index:100}
+#corp-view .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:calc(100vh - var(--shared-topbar))}
+#corp-view .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:sticky;top:var(--shared-topbar);z-index:50}
+
+/* ══ WORKER VIEW ══ */
+#worker-view{display:none;padding-top:var(--shared-topbar);min-height:100vh}
+
+/* ══ CORP CSS ══ */
+
+:root {
+  --g50:#E8F5EE; --g100:#B8E0CC; --g400:#1D9E75; --g600:#0F6E56; --g800:#085041;
+  --a50:#FEF3E2;  --a400:#F59E0B; --a600:#B45309;
+  --r50:#FEF2F2;  --r200:#FECACA; --r400:#EF4444; --r600:#DC2626;
+  --b50:#EFF6FF;  --b400:#3B82F6; --b600:#1D4ED8;
+  --p50:#F5F3FF;  --p400:#8B5CF6; --p600:#6D28D9;
+  --bg:#F4F6F4; --surface:#fff; --border:#E4EBE6;
+  --text:#111; --text2:#4B5563; --text3:#9CA3AF;
+  --sidebar-w: 220px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--g800);color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:48px;left:0;bottom:0;z-index:100}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:9px}
+.sb-logo-icon{width:30px;height:30px;border-radius:8px;background:var(--g400);display:flex;align-items:center;justify-content:center}
+.sb-logo-text{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.sb-logo-sub{font-size:10px;opacity:.5;margin-top:1px;font-weight:400}
+.sb-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sb-section{font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.35);padding:10px 10px 4px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:all .15s;position:relative}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:var(--g600);color:#fff;font-weight:600}
+.sb-item .ti{font-size:17px;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--r400);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.sb-badge.green{background:var(--g400)}
+.sb-bottom{padding:14px 10px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.sb-user:hover{background:rgba(255,255,255,.08)}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:var(--g600);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.sb-user-name{font-size:12px;font-weight:600;color:#fff}
+.sb-user-role{font-size:10px;color:rgba(255,255,255,.45)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:calc(100vh - 48px)}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:700;color:var(--g800);letter-spacing:-.3px}
+.topbar-date{font-size:12px;color:var(--text3);margin-left:auto}
+.topbar-notif{width:34px;height:34px;border-radius:8px;background:var(--r50);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--r400);border:2px solid var(--surface)}
+
+.content{flex:1;padding:28px;overflow-y:auto}
+
+/* ── CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border-radius:14px;padding:18px 20px;border:1px solid var(--border);position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;right:-16px;top:-16px;width:80px;height:80px;border-radius:50%;opacity:.06}
+.kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px}
+.kpi-val{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px}
+.kpi-label{font-size:12px;color:var(--text3);font-weight:500}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:6px;display:flex;align-items:center;gap:4px}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border)}
+.card-header{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.card-
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* ── ROI BANNER ── */
+.roi-banner{background:linear-gradient(135deg,var(--g800) 0%,var(--g600) 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;color:#fff;display:flex;align-items:center;gap:32px;position:relative;overflow:hidden}
+.roi-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05)}
+.roi-stat{text-align:center}
+.roi-stat-n{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.roi-stat-l{font-size:11px;opacity:.7;margin-top:3px;line-height:1.4;max-width:100px}
+.roi-divider{width:1px;height:48px;background:rgba(255,255,255,.2)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:700;color:var(--text3);text-align:left;padding:9px 14px;border-bottom:1.5px solid var(--border);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer;transition:background .12s}
+.tbl tbody tr:hover{background:#F9FBF9}
+.tbl tbody tr.selected{background:var(--g50)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.badge.green{background:var(--g50);color:var(--g600)}
+.badge.red{background:var(--r50);color:var(--r600)}
+.badge.amber{background:var(--a50);color:var(--a600)}
+.badge.blue{background:var(--b50);color:var(--b600)}
+.badge.purple{background:var(--p50);color:var(--p600)}
+.badge.gray{background:#F3F4F6;color:#6B7280}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--g600);color:#fff}
+.btn-primary:hover{background:var(--g800)}
+.btn-secondary{background:var(--surface);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg)}
+.btn-red{background:var(--r600);color:#fff}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding-bottom:18px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:1px;background:var(--border)}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;z-index:1}
+.tl-
+.tl-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.tl-time{font-size:11px;color:var(--text3)}
+.tl-desc{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.6}
+.tl-evidence{background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px;border:1px solid var(--border)}
+
+/* ── DETAIL PANEL ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:none}
+.detail-overlay.open{display:block}
+.detail-panel{position:fixed;right:0;top:0;bottom:0;width:520px;background:var(--surface);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;box-shadow:-8px 0 40px rgba(0,0,0,.15)}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;flex-shrink:0}
+.dp-
+.dp-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.dp-section{margin-bottom:24px}
+.dp-section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+
+/* ── STATS BAR ── */
+.stat-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.stat-bar-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0}
+.stat-bar-track{flex:1;background:var(--bg);border-radius:4px;height:8px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.stat-bar-val{font-size:12px;font-weight:600;color:var(--text);width:36px;text-align:right;flex-shrink:0}
+
+/* ── CHAT BUBBLE ── */
+.conv-item{margin-bottom:8px}
+.conv-speaker{font-size:10px;font-weight:700;margin-bottom:3px}
+.conv-bubble{display:inline-block;padding:7px 11px;border-radius:10px;font-size:12px;line-height:1.5;max-width:340px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}
+
+/* ── MISC ── */
+.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-3{gap:12px}.ml-auto{margin-left:auto}
+.text-sm{font-size:12px}.text-xs{font-size:11px}.text-muted{color:var(--text3)}.fw-600{font-weight:600}
+.mt-4{margin-top:16px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+.divider-h{height:1px;background:var(--border);margin:16px 0}
+.video-thumb{background:#111;border-radius:10px;height:90px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;position:relative;overflow:hidden}
+.video-thumb::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.3)}
+.video-play{z-index:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pulse{animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+
+/* ══ WORKER CSS ══ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+h1.pt{font-size:12px;color:#888;letter-spacing:.5px;font-weight:500}
+/* Shell */
+.shell{width:100%;max-width:980px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,.12)}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #eee}
+.logo{font-weight:700;color:#0F6E56;font-size:16px;display:flex;align-items:center;gap:7px;letter-spacing:-.3px}
+.mode-row{margin-left:auto;display:flex;gap:4px;background:#f2f4f2;border-radius:10px;padding:3px}
+.mode-btn{padding:7px 16px;font-size:12px;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;transition:all .18s;display:flex;align-items:center;gap:5px}
+.mode-btn.active{background:#fff;color:#0F6E56;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.mode-btn:not(.active){background:transparent;color:#999}
+/* Corp */
+.corp-wrap{display:flex;height:760px}
+.sidebar{width:186px;border-right:1px solid #eee;padding:16px 12px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;background:#fafafa}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:10px 12px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;border-radius:10px;width:100%;text-align:left;color:#888;font-weight:500;transition:all .15s}
+.nav-btn.active{background:#E1F5EE;color:#0F6E56;font-weight:700}
+.ai-hint{margin-top:auto;background:linear-gradient(135deg,#E1F5EE,#d0f0e5);border-radius:12px;padding:12px}
+.corp-body{flex:1;overflow-y:auto;background:#f6f8f6}
+.cscreen{padding:24px;min-height:100%}
+.page-hdr{margin-bottom:20px}
+.page-hdr h2{font-size:20px;font-weight:700;color:#085041;letter-spacing:-.5px}
+.page-hdr p{font-size:12px;color:#aaa;margin-top:3px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{border-radius:14px;padding:14px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#fff;border-radius:14px;padding:15px;border:1px solid #eee}
+.card-title{font-size:13px;font-weight:700;color:#333;margin-bottom:11px;display:flex;align-items:center;gap:6px}
+.bar-track{background:#f0f0f0;border-radius:4px;height:7px;flex:1}
+.bar-fill{height:100%;border-radius:4px}
+.row-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f5f5f5}
+.row-item:last-child{border-bottom:none}
+.chip{display:inline-flex;align-items:center;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;background:#f0f0f0;color:#666;font-weight:500}
+/* Phone */
+.app-wrap{display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(145deg,#dceae1,#e8f0ea);min-height:820px;gap:16px}
+/* Flow label */
+.flow-label{font-size:11px;font-weight:700;letter-spacing:.5px;color:#666;background:rgba(255,255,255,.6);padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px}
+.phone{width:368px;background:#fff;border-radius:46px;overflow:hidden;border:8px solid #111;box-shadow:0 20px 64px rgba(0,0,0,.22);flex-shrink:0;position:relative}
+.status-bar{padding:12px 22px 0;display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#222}
+.pscreen{height:590px;overflow-y:auto;background:#f5f7f5}
+.pnav{display:flex;border-top:1px solid #eee;background:#fff;padding-bottom:10px}
+.pnav-btn{flex:1;padding:10px 0 4px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;color:#c0c7c2;position:relative;transition:color .15s}
+.pnav-btn.active{color:#0F6E56}
+.pnav-btn .ti{font-size:22px}
+.pnav-btn span{font-size:9px;font-weight:700;letter-spacing:.3px}
+.adot{position:absolute;top:7px;right:10px;width:7px;height:7px;border-radius:50%;background:#E24B4A}
+/* Worker screens */
+.ws{padding:20px;background:#f5f7f5;min-height:100%}
+/* Login / 출근 */
+.grad-bg{background:linear-gradient(160deg,#0F6E56,#1D9E75 60%,#5DCAA5);min-height:100%;padding:32px 22px;display:flex;flex-direction:column}
+/* Report sections */
+.rsec{margin-bottom:14px;border:1px solid #eee;border-radius:12px;overflow:hidden}
+.rsec-hdr{background:#f8faf9;padding:9px 13px;font-size:12px;font-weight:700;color:#0F6E56;display:flex;align-items:center;gap:6px;border-bottom:1px solid #eee}
+.rsec-body{padding:11px 13px}
+.rrow{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.rrow:last-child{border-bottom:none}
+.rkey{font-size:11px;color:#aaa;width:76px;flex-shrink:0;padding-top:1px}
+.rval{font-size:12px;color:#333;flex:1;line-height:1.6}
+/* Checklist */
+.cl-section{margin-bottom:14px}
+.cl-sec-title{font-size:12px;font-weight:700;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;letter-spacing:-.2px}
+.cl-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:#fff;border:1px solid #eee}
+.cl-item.warn{background:#FAEEDA;border-color:#FAC775}
+.cl-item.unchecked{background:#f8f8f8;border-color:#eee;opacity:.8}
+.cl-check{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #ddd;background:#fff;margin-top:1px}
+.cl-check.done{background:#1D9E75;border-color:#1D9E75}
+.cl-text{flex:1;font-size:12px;color:#333;line-height:1.5}
+.cl-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;flex-shrink:0}
+/* Step bar */
+.step-bar{display:flex;align-items:flex-start;margin-bottom:18px}
+.snode{display:flex;flex-direction:column;align-items:center;gap:3px}
+.scircle{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.sline{flex:1;height:1.5px;margin-top:11px}
+.slabel{font-size:9px;font-weight:700;letter-spacing:.2px}
+/* Animations */
+@keyframes wv{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.wave-bar{width:4px;border-radius:3px;background:#1D9E75;transform-origin:bottom}
+.pulse-dot{animation:pulse 1.2s ease-in-out infinite}
+.spin{animation:spin .8s linear infinite}
+.fade-in{animation:fadeIn .25s ease both}
+.scale-in{animation:scaleIn .3s ease both}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+
+
+/* Worker: override app-wrap to account for topbar */
+#worker-view .app-wrap{min-height:calc(100vh - var(--shared-topbar));padding:24px}
+/* Worker: shell hidden, phone shown directly */
+#worker-view .shell{
+  display:block;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  max-width:100%;
+  width:100%;
+}
+#worker-view .shell > .topbar{ display:none }
+
+/* ══ ENHANCED: Agent Monitor Panel ══ */
+.agent-monitor{
+  position:absolute;bottom:60px;right:8px;width:220px;
+  background:#1a1a2e;color:#fff;border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:50;
+  font-size:10px;overflow:hidden;
+  transition:all .2s ease;
+}
+.agent-monitor.collapsed{height:32px;width:140px;border-radius:16px}
+.agent-monitor .am-header{
+  padding:7px 10px;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:5px;cursor:pointer;
+  font-weight:700;font-size:10px;
+}
+.agent-monitor .am-body{
+  max-height:180px;overflow-y:auto;padding:6px 8px;
+}
+.agent-monitor.collapsed .am-body{display:none}
+.am-entry{
+  padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06);
+  line-height:1.4;opacity:.85;
+}
+.am-entry:last-child{border-bottom:none}
+
+/* ══ ENHANCED: Agent step animations ══ */
+@keyframes agentStepIn{
+  from{opacity:0;transform:translateX(-10px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.agent-step{animation:agentStepIn .4s ease both}
+
+@keyframes piiFlash{
+  0%,100%{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+  50%{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.5)}
+}
+.pii-flash{animation:piiFlash .6s ease 2}
+
+@keyframes typingDots{
+  0%,80%,100%{opacity:.3}
+  40%{opacity:1}
+}
+.typing-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:#1D9E75;margin:0 1px;animation:typingDots 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+
+/* Agent tool sidebar */
+.tool-item{
+  padding:4px 8px;border-radius:6px;margin-bottom:3px;
+  font-size:10px;font-weight:600;
+  background:#f0f0f0;color:#999;
+  transition:all .3s ease;display:flex;align-items:center;gap:5px;
+}
+.tool-item.active{background:#E1F5EE;color:#0F6E56}
+.tool-item.done{background:#0F6E56;color:#fff}
+
+/* checklist source tooltip */
+.cl-source-tip{
+  font-size:10px;color:#888;margin-top:3px;padding:4px 8px;
+  background:#f8f8f8;border-radius:6px;border:1px solid #eee;
+  line-height:1.5;
+}
+
+/* Protection agent card */
+.prot-agent-card{
+  background:#1a1a2e;border-radius:12px;padding:12px;
+  color:#fff;margin-bottom:12px;overflow:hidden;
+}
+.prot-agent-step{
+  padding:5px 0;font-size:11px;line-height:1.5;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.prot-agent-step:last-child{border-bottom:none}
+
+/* Report agent badge */
+.report-agent-badge{
+  background:linear-gradient(135deg,#EEEDFE,#E6F1FB);
+  border-radius:10px;padding:9px 12px;margin-bottom:10px;
+  border:1px solid #d0d0f0;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SHARED TOPBAR ══ -->
+<div class="shared-bar">
+  <div class="sb-logo-area">
+    <div class="sb-logo-icon"><i class="ti ti-heartbeat" style="font-size:14px;color:#fff"></i></div>
+    <span class="sb-logo-name">CareLink AI Agent</span>
+    <span class="sb-logo-sub">LIKELION Ideathon</span>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-corp" onclick="switchMode('corp')">
+      <i class="ti ti-building" style="font-size:13px"></i> 기관 관리자
+    </button>
+    <button class="mode-tab" id="tab-worker" onclick="switchMode('worker')">
+      <i class="ti ti-device-mobile" style="font-size:13px"></i> 요양보호사 앱
+    </button>
+  </div>
+</div>
+
+<!-- ══ CORP VIEW ══ -->
+<div id="corp-view">
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon"><i class="ti ti-heartbeat" style="font-size:16px;color:#fff"></i></div>
+    <div>
+      <div class="sb-logo-text">CareLink AI</div>
+      <div class="sb-logo-sub">기관 관리자</div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">메인</div>
+    <div class="sb-item active" id="nav-dashboard" onclick="goTo('dashboard')">
+      <i class="ti ti-layout-dashboard"></i> 대시보드
+    </div>
+    <div class="sb-section">운영</div>
+    <div class="sb-item" id="nav-protection" onclick="goTo('protection')">
+      <i class="ti ti-shield-exclamation"></i> 보호 이벤트
+      <span class="sb-badge">2</span>
+    </div>
+    <div class="sb-item" id="nav-reports" onclick="goTo('reports')">
+      <i class="ti ti-file-text"></i> 보고서 수신함
+      <span class="sb-badge green">3</span>
+    </div>
+    <div class="sb-item" id="nav-staff" onclick="goTo('staff')">
+      <i class="ti ti-users"></i> 인력 현황
+    </div>
+    <div class="sb-item" id="nav-recipients" onclick="goTo('recipients')">
+      <i class="ti ti-home-heart"></i> 수급자 관리
+    </div>
+  </div>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar">노원</div>
+      <div>
+        <div class="sb-user-name">서울 노원 방문요양센터</div>
+        <div class="sb-user-role">관리자 · 김○○</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">대시보드</div>
+    <div class="topbar-date">2026년 5월 16일 금요일</div>
+    <div class="topbar-notif" onclick="goTo('protection')">
+      <i class="ti ti-bell" style="font-size:17px;color:var(--r600)"></i>
+      <div class="notif-dot"></div>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<!-- ══ DETAIL PANEL ══ -->
+<div class="detail-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="dp-header" id="dp-header"></div>
+  <div class="dp-body" id="dp-body"></div>
+  <div class="dp-footer" id="dp-footer"></div>
+</div>
+</div>
+
+<!-- ══ WORKER VIEW ══ -->
+<div id="worker-view">
+
+<div class="shell">
+    <!-- CORP -->
+  <div id="view-corporate">
+    <div class="corp-wrap">
+      <div class="sidebar">
+        <button class="nav-btn active" id="nav-dashboard" onclick="setCorpTab('dashboard')"><i class="ti ti-layout-dashboard" style="font-size:17px"></i> 대시보드</button>
+        <button class="nav-btn" id="nav-reports" onclick="setCorpTab('reports')"><i class="ti ti-file-text" style="font-size:17px"></i> 보고서 수신함</button>
+        <button class="nav-btn" id="nav-workers" onclick="setCorpTab('workers')"><i class="ti ti-users" style="font-size:17px"></i> 인력 관리</button>
+        <button class="nav-btn" id="nav-protection" onclick="setCorpTab('protection')"><i class="ti ti-shield" style="font-size:17px"></i> 보호 현황</button>
+        <div class="ai-hint">
+          <div style="font-size:12px;font-weight:700;color:#0F6E56;display:flex;align-items:center;gap:5px;margin-bottom:4px"><i class="ti ti-sparkles"></i> AI 현황</div>
+          <div style="font-size:11px;color:#1D9E75;line-height:1.6">AI 보고서 29건 완료<br>보호 알림 1건 처리 중</div>
+        </div>
+      </div>
+      <div class="corp-body">
+        <div id="corp-dashboard" class="cscreen"></div>
+        <div id="corp-reports" class="cscreen" style="display:none"></div>
+        <div id="corp-workers" class="cscreen" style="display:none"></div>
+        <div id="corp-protection" class="cscreen" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKER -->
+  <div id="view-worker" style="display:none">
+    <div class="app-wrap">
+      <div class="flow-label" id="flow-label"><i class="ti ti-login"></i> 로그인</div>
+      <div class="phone">
+        <div class="status-bar" id="sbar"><span>9:41</span><span style="font-size:10px">●●● ▮</span></div>
+        <div class="pscreen" id="pscreen"></div>
+        <div class="pnav" id="pnav" style="display:none">
+          <button class="pnav-btn active" id="wn-home" onclick="setWTab('home')"><i class="ti ti-home"></i><span>홈</span></button>
+          <button class="pnav-btn" id="wn-visit" onclick="setWTab('visit')"><i class="ti ti-microphone"></i><span>방문</span></button>
+          <button class="pnav-btn" id="wn-records" onclick="setWTab('records')"><i class="ti ti-notebook"></i><span>기록</span></button>
+          <button class="pnav-btn" id="wn-protection" onclick="setWTab('protection')"><i class="ti ti-shield"></i><span>보호</span><div class="adot" id="adot" style="display:none"></div></button>
+        </div>
+        <!-- Agent Monitor Panel -->
+        <div class="agent-monitor collapsed" id="agent-monitor" onclick="toggleAgentMonitor(event)">
+          <div class="am-header">🤖 Agent 모니터</div>
+          <div class="am-body" id="am-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ══ MODE SWITCH ══ */
+function switchMode(mode) {
+  document.getElementById('corp-view').style.display   = mode === 'corp'   ? 'flex' : 'none';
+  document.getElementById('worker-view').style.display = mode === 'worker' ? 'block': 'none';
+  document.getElementById('tab-corp').classList.toggle('active',   mode === 'corp');
+  document.getElementById('tab-worker').classList.toggle('active', mode === 'worker');
+  if (mode === 'worker') {
+    const vw = document.getElementById('view-worker');
+    if (vw) vw.style.display = 'block';
+    const vc = document.getElementById('view-corporate');
+    if (vc) vc.style.display = 'none';
+    renderW();
+  }
+  if (mode === 'corp') render();
+}
+
+/* ══ CORP JS ══ */
+
+/* ══════════ DATA ══════════ */
+const EVENTS = [
+  {
+    id: 'E001',
+    date: '2026.05.16', time: '오후 2:07', elapsed: '오늘',
+    caregiver: '김민지', recipient: '최○○', age: 71,
+    type: '폭언', severity: 'high', status: '처리 중',
+    duration: '28초',
+    ai_summary: '보호사가 청소 서비스 제공 시작을 알리자 수급자가 고성으로 거부 및 폭언. 목소리 크기 임계값(85dB) 초과 감지 후 카메라 자동 시작.',
+    conversation: [
+      {sp:'김민지 보호사', side:'right', text:'어르신, 오늘 방 청소 도와드릴게요.'},
+      {sp:'최○○ 어르신', side:'left', text:'"저리 꺼져! 필요 없어! 당장 나가!"'},
+      {sp:'AI 감지', side:'sys', text:'⚠ 음성 강도 87dB 감지 — 카메라 자동 시작'},
+      {sp:'김민지 보호사', side:'right', text:'어르신, 제가 잠깐 자리 비켜드릴게요.'},
+    ],
+    evidence: { video: true, audio: true, duration: '28초', upload: '기관 서버 저장 완료' },
+    actions: [],
+    timeline: [
+      {type:'detect', time:'14:07', title:'음성 임계값 초과 감지', desc:'85dB 이상 지속 3초'},
+      {type:'record', time:'14:07', title:'카메라 자동 시작', desc:'영상+음성 동시 수집'},
+      {type:'upload', time:'14:07', title:'증거 서버 업로드', desc:'암호화 저장 완료'},
+      {type:'alert',  time:'14:08', title:'관리자 알림 발송', desc:'이 화면으로 자동 보고'},
+    ]
+  },
+  {
+    id: 'E002',
+    date: '2026.05.14', time: '오전 10:23', elapsed: '2일 전',
+    caregiver: '웅우엔 타잉', recipient: '박○○', age: 83,
+    type: '고성', severity: 'medium', status: '확인 완료',
+    duration: '14초',
+    ai_summary: '이동 보조 중 수급자가 고성을 냈으나 상황 파악 결과 통증 호소로 인한 것으로 확인. 폭언 아닌 것으로 최종 판단.',
+    conversation: [
+      {sp:'웅우엔 타잉 보호사', side:'right', text:'어르신, 제가 부축해드릴게요.'},
+      {sp:'박○○ 어르신', side:'left', text:'"아이고 아파! 다리가!"'},
+      {sp:'AI 감지', side:'sys', text:'⚠ 음성 강도 82dB 감지 — 카메라 자동 시작'},
+      {sp:'웅우엔 타잉 보호사', side:'right', text:'어르신 많이 아프세요? 제가 천천히 할게요.'},
+    ],
+    evidence: { video: true, audio: true, duration: '14초', upload: '기관 서버 저장 완료' },
+    actions: ['통증 호소로 인한 고성 — 폭언 아닌 것으로 확인', '담당 간호사에게 통증 내용 전달 완료'],
+    timeline: [
+      {type:'detect', time:'10:23', title:'음성 임계값 초과 감지', desc:'82dB 감지'},
+      {type:'record', time:'10:23', title:'카메라 자동 시작', desc:'영상+음성 동시 수집'},
+      {type:'upload', time:'10:23', title:'증거 서버 업로드', desc:'암호화 저장 완료'},
+      {type:'alert',  time:'10:24', title:'관리자 알림 발송', desc:''},
+      {type:'resolve',time:'11:05', title:'확인 완료 처리', desc:'통증 호소로 판단, 폭언 아님'},
+    ]
+  },
+  {
+    id: 'E003',
+    date: '2026.04.28', time: '오후 2:14', elapsed: '18일 전',
+    caregiver: '이수진', recipient: '최○○', age: 71,
+    type: '폭언', severity: 'high', status: '법적 처리',
+    duration: '41초',
+    ai_summary: '투약 보조 거부 및 지속적 폭언. 41초간 증거 수집. 수급자 보호자에게 통보, 기관 차원 경고장 발송 완료.',
+    conversation: [
+      {sp:'이수진 보호사', side:'right', text:'어르신, 약 드실 시간이에요.'},
+      {sp:'최○○ 어르신', side:'left', text:'"약은 무슨! 꺼져버려! 이런 사람이 와서 뭘 해!"'},
+      {sp:'AI 감지', side:'sys', text:'⚠ 음성 강도 91dB 감지 — 카메라 자동 시작'},
+      {sp:'최○○ 어르신', side:'left', text:'"나가! 당장 나가란 말이야!"'},
+    ],
+    evidence: { video: true, audio: true, duration: '41초', upload: '기관 서버 저장 완료' },
+    actions: ['보호자(최○○ 아들)에게 서면 통보', '기관 차원 경고장 발송 완료', '재발 시 서비스 중단 안내'],
+    timeline: [
+      {type:'detect',  time:'14:14', title:'음성 임계값 초과 감지', desc:'91dB 감지'},
+      {type:'record',  time:'14:14', title:'카메라 자동 시작', desc:'영상+음성 41초 수집'},
+      {type:'upload',  time:'14:14', title:'증거 서버 업로드', desc:'암호화 저장'},
+      {type:'alert',   time:'14:15', title:'관리자 알림 발송', desc:''},
+      {type:'resolve', time:'2026.04.29', title:'보호자 서면 통보', desc:'경고장 발송 완료'},
+      {type:'resolve', time:'2026.04.29', title:'법적 처리 완료', desc:'증거 보존 중'},
+    ]
+  },
+];
+
+const REPORTS = [
+  {id:'R001', date:'2026.05.16 12:48', worker:'김민지', recipient:'이○○', age:88, status:'미확인', urgent:true,
+   summary:'식사량 1/2 (식욕 부진 지속), 우울감 표현 — 복지사 연계 검토 필요',
+   services:'식사 보조, 이동 보조, 청소, 말벗 30분',
+   note:'우울감 지속 관찰 → 사회복지사 상담 연계 권장'},
+  {id:'R002', date:'2026.05.16 15:10', worker:'이수진', recipient:'김○○', age:76, status:'미확인', urgent:false,
+   summary:'식사 2/3, 무릎 통증 호소, 이동 보조 강화',
+   services:'이동 보조, 식사 보조, 청소',
+   note:'무릎 통증 증가 추세 — 담당 간호사에게 전달 권장'},
+  {id:'R003', date:'2026.05.16 10:15', worker:'최은영', recipient:'박○○', age:83, status:'미확인', urgent:false,
+   summary:'식사 완료, 체위 변경 2회, 투약 보조 완료, 정서 안정',
+   services:'식사 보조, 체위 변경, 투약 보조',
+   note:'특이사항 없음'},
+  {id:'R004', date:'2026.05.14 12:38', worker:'김민지', recipient:'이○○', age:88, status:'확인',   urgent:false,
+   summary:'식사 2/3, 산책 20분, 세탁 완료, 정서 안정',
+   services:'식사 보조, 산책 동행, 세탁, 말벗',
+   note:'전날 대비 식사량 개선'},
+  {id:'R005', date:'2026.05.14 15:05', worker:'웅우엔 타잉', recipient:'최○○', age:71, status:'확인', urgent:false,
+   summary:'식사 완료, 목욕 보조, 정서 다소 불안정',
+   services:'목욕 보조, 식사 보조, 정서 지원',
+   note:'기분 변동 관찰 중'},
+];
+
+const STAFF = [
+  {name:'김민지',  ini:'김민', level:'고급', status:'근무중', visits:3, done:1, ai:'98%', since:'2021.03', turnRisk:'낮음'},
+  {name:'이수진',  ini:'이수', level:'중급', status:'근무중', visits:2, done:2, ai:'91%', since:'2022.07', turnRisk:'낮음'},
+  {name:'웅우엔 타잉', ini:'웅타', level:'중급', status:'귀가',  visits:1, done:1, ai:'96%', since:'2024.02', turnRisk:'중간'},
+  {name:'정현우',  ini:'정현', level:'초급', status:'대기',   visits:0, done:0, ai:'78%', since:'2023.11', turnRisk:'높음'},
+  {name:'박지연',  ini:'박지', level:'고급', status:'휴가',   visits:0, done:0, ai:'99%', since:'2020.08', turnRisk:'낮음'},
+  {name:'최은영',  ini:'최은', level:'고급', status:'귀가',   visits:2, done:2, ai:'94%', since:'2019.05', turnRisk:'낮음'},
+];
+
+/* ══════════ STATE ══════════ */
+let S = { page: 'dashboard', reportFilter: '전체', protFilter: '전체', selReport: null, selEvent: null };
+
+/* ══════════ NAV ══════════ */
+function goTo(page) {
+  S.page = page;
+  S.selReport = null;
+  S.selEvent = null;
+  closePanel();
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  const nav = document.getElementById('nav-' + page);
+  if (nav) nav.classList.add('active');
+  const titles = {dashboard:'대시보드', protection:'보호 이벤트', reports:'보고서 수신함', staff:'인력 현황', recipients:'수급자 관리'};
+  document.getElementById('topbar-title').textContent = titles[page] || page;
+  render();
+}
+
+function openPanel(header, body, footer) {
+  document.getElementById('dp-header').innerHTML = header;
+  document.getElementById('dp-body').innerHTML = body;
+  document.getElementById('dp-footer').innerHTML = footer;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+/* ══════════ RENDER ══════════ */
+function render() {
+  const c = document.getElementById('content');
+  if (S.page === 'dashboard')   c.innerHTML = renderDashboard();
+  else if (S.page === 'protection') c.innerHTML = renderProtection();
+  else if (S.page === 'reports') c.innerHTML = renderReports();
+  else if (S.page === 'staff')  c.innerHTML = renderStaff();
+  else if (S.page === 'recipients') c.innerHTML = renderRecipients();
+}
+
+/* ─── DASHBOARD ─── */
+function renderDashboard() {
+  return `
+  <div class="roi-banner">
+    <div style="flex:1">
+      <div style="font-size:11px;opacity:.6;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">이달 도입 효과</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">보호사 이직 0명 · 법적 분쟁 0건</div>
+      <div style="font-size:13px;opacity:.75">보호 이벤트 100% 증거 확보 · AI 보고서로 월 인당 8시간 절감</div>
+    </div>
+    <div class="roi-divider"></div>
+    <div class="roi-stat"><div class="roi-stat-n">0명</div><div class="roi-stat-l">이달 이직</div></div>
+    <div class="roi-divider"></div>
+    <div class="roi-stat"><div class="roi-stat-n">100%</div><div class="roi-stat-l">보호 이벤트<br>증거 확보율</div></div>
+    <div class="roi-divider"></div>
+    <div class="roi-stat"><div class="roi-stat-n">48h</div><div class="roi-stat-l">AI 보고서로<br>절감된 시간</div></div>
+    <div class="roi-divider"></div>
+    <div class="roi-stat"><div class="roi-stat-n">₩0</div><div class="roi-stat-l">이달 구인<br>비용</div></div>
+  </div>
+
+  <div class="kpi-grid">
+    ${[
+      {ico:'shield-exclamation', label:'오늘 보호 이벤트', val:'1건', delta:'처리 중', deltaColor:'var(--r600)', bg:'var(--r50)', ic:'var(--r400)', onclick:"goTo('protection')"},
+      {ico:'file-text',          label:'미확인 보고서',   val:'3건', delta:'오늘 제출', deltaColor:'var(--g600)', bg:'var(--g50)', ic:'var(--g400)', onclick:"goTo('reports')"},
+      {ico:'users',              label:'오늘 방문',       val:'6건', delta:'완료 5 · 진행 1', deltaColor:'var(--text3)', bg:'#EFF6FF', ic:'var(--b400)', onclick:"goTo('staff')"},
+      {ico:'trending-down',      label:'이달 이직률',     val:'0%',  delta:'업계 평균 4.2% 대비', deltaColor:'var(--g600)', bg:'var(--g50)', ic:'var(--g400)', onclick:''},
+    ].map(k => `
+    <div class="kpi-card" onclick="${k.onclick}" style="${k.onclick?'cursor:pointer':''}">
+      <div class="kpi-icon" style="background:${k.bg};color:${k.ic}">
+        <i class="ti ti-${k.ico}"></i>
+      </div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-delta" style="color:${k.deltaColor}">
+        <i class="ti ti-minus" style="font-size:10px"></i>${k.delta}
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-shield" style="color:var(--r400)"></i> 최근 보호 이벤트</div>
+        <button class="btn btn-secondary btn-sm" onclick="goTo('protection')">전체 보기</button>
+      </div>
+      <div class="card-body" style="padding-top:12px">
+        ${EVENTS.slice(0,3).map(e => `
+        <div onclick="openEventDetail('${e.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer">
+          <div style="width:8px;height:8px;border-radius:50%;background:${e.severity==='high'?'var(--r400)':e.severity==='medium'?'var(--a400)':'var(--g400)'};flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${e.caregiver} → ${e.recipient} 어르신</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${e.elapsed} · ${e.type} · ${e.duration}</div>
+          </div>
+          <span class="badge ${e.status==='처리 중'?'amber':e.status==='법적 처리'?'red':'green'}">${e.status}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-calendar" style="color:var(--g400)"></i> 오늘 방문 현황</div>
+      </div>
+      <div class="card-body" style="padding-top:12px">
+        ${[
+          {t:'09:00',w:'김민지',r:'이○○',s:'완료'},
+          {t:'10:00',w:'최은영',r:'박○○',s:'완료'},
+          {t:'10:30',w:'웅우엔 타잉',r:'최○○',s:'완료'},
+          {t:'11:30',w:'이수진',r:'김○○',s:'완료'},
+          {t:'14:00',w:'김민지',r:'최○○',s:'보호 이벤트'},
+          {t:'15:00',w:'최은영',r:'이○○',s:'예정'},
+        ].map(v => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+          <div style="width:40px;font-size:11px;font-weight:600;color:var(--text3)">${v.t}</div>
+          <div style="flex:1;color:var(--text2)">${v.w} → ${v.r} 어르신</div>
+          <span class="badge ${v.s==='완료'?'green':v.s==='보호 이벤트'?'red':v.s==='예정'?'gray':'amber'}"
+            ${v.s==='보호 이벤트'?`onclick="event.stopPropagation();goTo('protection')" style="cursor:pointer"`:''}>
+            ${v.s}
+          </span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-file-text" style="color:var(--p400)"></i> AI 보고서 오늘 제출 현황</div>
+      <button class="btn btn-secondary btn-sm" onclick="goTo('reports')">전체 보기</button>
+    </div>
+    <div class="card-body" style="padding-top:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+        ${[
+          {l:'AI 보고서', v:'5건', pct:83, c:'var(--g400)'},
+          {l:'확인 완료',   v:'2건', pct:33, c:'var(--b400)'},
+          {l:'미확인',     v:'3건', pct:50, c:'var(--a400)'},
+        ].map(s => `
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:10px">
+          <div style="font-size:22px;font-weight:700;color:var(--text)">${s.v}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${s.l}</div>
+        </div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">오늘 보고서 AI 작성률</div>
+      <div style="background:var(--bg);border-radius:6px;height:10px;overflow:hidden">
+        <div style="width:83%;height:100%;background:var(--g400);border-radius:6px"></div>
+      </div>
+      <div style="font-size:11px;color:var(--g600);margin-top:5px;font-weight:600">83% — 전월 71% 대비 +12%p</div>
+    </div>
+  </div>`;
+}
+
+/* ─── PROTECTION ─── */
+function renderProtection() {
+  const filters = ['전체','처리 중','확인 완료','법적 처리'];
+  const list = S.protFilter === '전체' ? EVENTS : EVENTS.filter(e => e.status === S.protFilter);
+
+  return `
+  <div style="background:linear-gradient(135deg,#1a0a0a,var(--r600));border-radius:14px;padding:20px 24px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:20px">
+    <div style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="ti ti-shield-exclamation" style="font-size:24px"></i>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:16px;font-weight:700;margin-bottom:3px">보호 이벤트 관리</div>
+      <div style="font-size:12px;opacity:.75">AI가 감지한 충돌·폭언 이벤트. 모든 증거는 자동 수집됩니다.</div>
+    </div>
+    <div style="display:flex;gap:20px">
+      ${[{l:'이달 감지',v:'3건'},{l:'증거 확보율',v:'100%'},{l:'처리 완료',v:'2건'}].map(s=>`
+      <div style="text-align:center">
+        <div style="font-size:20px;font-weight:700">${s.v}</div>
+        <div style="font-size:10px;opacity:.6;margin-top:2px">${s.l}</div>
+      </div>`).join('<div style="width:1px;background:rgba(255,255,255,.2)"></div>')}
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:8px;align-items:center">
+    ${[
+      ['microphone','모든 방문 중 항상 음성 모니터링'],
+      ['waveform','데시벨 급증 · 충돌 패턴 실시간 감지'],
+      ['video','임계값 초과 시 카메라 자동 시작'],
+      ['cloud-upload','증거 서버 즉시 업로드 · 암호화 보관'],
+      ['bell','관리자 자동 알림 발송'],
+    ].map(([ic,t],i) => `
+      <div style="display:flex;align-items:center;gap:6px;flex:1">
+        <div style="width:26px;height:26px;border-radius:7px;background:var(--g50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-${ic}" style="font-size:13px;color:var(--g600)"></i>
+        </div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.4">${t}</div>
+      </div>
+      ${i<4?'<i class="ti ti-arrow-right" style="color:var(--border);font-size:16px;flex-shrink:0"></i>':''}
+    `).join('')}
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="padding-bottom:14px">
+      <div class="card-title"><i class="ti ti-list" style="color:var(--r400)"></i> 이벤트 목록</div>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        ${filters.map(f => `<button class="btn btn-sm ${S.protFilter===f?'btn-primary':'btn-secondary'}" onclick="S.protFilter='${f}';render()">${f}</button>`).join('')}
+      </div>
+    </div>
+    <div>
+      <table class="tbl">
+        <thead><tr>
+          <th></th><th>발생 일시</th><th>보호사</th><th>수급자</th><th>유형</th><th>증거</th><th>상태</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${list.map(e => `
+          <tr onclick="openEventDetail('${e.id}')">
+            <td><div style="width:8px;height:8px;border-radius:50%;background:${e.severity==='high'?'var(--r400)':e.severity==='medium'?'var(--a400)':'var(--g400)'}"></div></td>
+            <td><div style="font-weight:600">${e.date}</div><div class="text-sm text-muted">${e.time}</div></td>
+            <td>${e.caregiver}</td>
+            <td>${e.recipient} 어르신 (${e.age}세)</td>
+            <td><span class="badge ${e.type==='폭언'?'red':'amber'}">${e.type}</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                ${e.evidence.video?'<span class="badge blue"><i class="ti ti-video" style="font-size:10px"></i>영상</span>':''}
+                <span class="badge gray">${e.duration}</span>
+              </div>
+            </td>
+            <td><span class="badge ${e.status==='처리 중'?'amber':e.status==='법적 처리'?'red':'green'}">${e.status}</span></td>
+            <td><i class="ti ti-chevron-right" style="color:var(--text3)"></i></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function openEventDetail(id) {
+  const e = EVENTS.find(x => x.id === id);
+  if (!e) return;
+
+  const tlIcons = {detect:'radio',record:'video',upload:'cloud-upload',alert:'bell',resolve:'check'};
+  const tlColors = {detect:'var(--a50)',record:'var(--r50)',upload:'var(--b50)',alert:'var(--r50)',resolve:'var(--g50)'};
+  const tlIconColors = {detect:'var(--a400)',record:'var(--r400)',upload:'var(--b400)',alert:'var(--r400)',resolve:'var(--g400)'};
+
+  const header = `
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span class="badge ${e.type==='폭언'?'red':'amber'}">${e.type}</span>
+        <span class="badge ${e.status==='처리 중'?'amber':e.status==='법적 처리'?'red':'green'}">${e.status}</span>
+      </div>
+      <div style="font-size:16px;font-weight:700">${e.caregiver} 보호사 · ${e.recipient} 어르신</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px">${e.date} ${e.time}</div>
+    </div>
+    <button onclick="closePanel()" style="width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center">
+      <i class="ti ti-x" style="font-size:15px"></i>
+    </button>`;
+
+  const body = `
+    <div class="dp-section">
+      <div class="dp-section-title">AI 상황 요약</div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;border-left:3px solid var(--g400)">
+        ${e.ai_summary}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">자동 대응 타임라인</div>
+      <div class="timeline">
+        ${e.timeline.map(t => `
+        <div class="tl-item">
+          <div class="tl-dot" style="background:${tlColors[t.type]}">
+            <i class="ti ti-${tlIcons[t.type]||'circle'}" style="font-size:14px;color:${tlIconColors[t.type]}"></i>
+          </div>
+          <div class="tl-body">
+            <div class="tl-title">${t.title}</div>
+            <div class="tl-time">${t.time}</div>
+            ${t.desc?`<div class="tl-desc">${t.desc}</div>`:''}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">수집된 증거</div>
+      <div class="tl-evidence" style="margin-bottom:8px">
+        <div class="video-thumb" style="width:120px;flex-shrink:0;height:72px;border-radius:8px">
+          <div class="video-play">
+            <i class="ti ti-player-play-filled" style="font-size:24px"></i>
+            <div style="font-size:9px;opacity:.7">${e.duration}</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">증거 영상 · 음성</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px">${e.evidence.upload}</div>
+          <div style="display:flex;gap:6px">
+            <span class="badge blue"><i class="ti ti-video" style="font-size:10px"></i>영상 ${e.duration}</span>
+            <span class="badge gray"><i class="ti ti-lock" style="font-size:10px"></i>암호화</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">AI 대화 요약</div>
+      ${e.conversation.map(c => {
+        if (c.side === 'sys') return `<div style="text-align:center;margin:8px 0"><span style="font-size:11px;background:var(--r50);color:var(--r600);padding:4px 10px;border-radius:20px;font-weight:600">${c.text}</span></div>`;
+        const isRight = c.side === 'right';
+        return `<div class="conv-item" style="text-align:${isRight?'right':'left'}">
+          <div class="conv-speaker" style="color:${isRight?'var(--g600)':'var(--text3)'}">${c.sp}</div>
+          <div class="conv-bubble" style="background:${isRight?'var(--g50)':'var(--r50)'};color:${isRight?'var(--g800)':'var(--r800,#333)'}">${c.text}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${e.actions.length > 0 ? `
+    <div class="dp-section">
+      <div class="dp-section-title">처리 내역</div>
+      ${e.actions.map(a => `
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px">
+        <i class="ti ti-check" style="font-size:14px;color:var(--g400);flex-shrink:0;margin-top:1px"></i>
+        <div style="font-size:13px;color:var(--text2)">${a}</div>
+      </div>`).join('')}
+    </div>` : ''}`;
+
+  const footer = e.status === '처리 중' ? `
+    <button class="btn btn-secondary" onclick="closePanel()" style="flex:1">닫기</button>
+    <button class="btn" style="flex:1;background:var(--a400);color:#fff">보호자 통보</button>
+    <button class="btn btn-primary" style="flex:2" onclick="markResolved('${e.id}')">
+      <i class="ti ti-check"></i> 확인 완료 처리
+    </button>` :
+    `<button class="btn btn-secondary" onclick="closePanel()" style="flex:1">닫기</button>
+    <button class="btn btn-primary" style="flex:1">
+      <i class="ti ti-download"></i> 증거 다운로드
+    </button>`;
+
+  openPanel(header, body, footer);
+}
+
+function markResolved(id) {
+  const e = EVENTS.find(x => x.id === id);
+  if (e) { e.status = '확인 완료'; closePanel(); render(); }
+}
+
+/* ─── REPORTS ─── */
+function renderReports() {
+  const filters = ['전체','미확인','확인'];
+  const list = S.reportFilter === '전체' ? REPORTS : REPORTS.filter(r => r.status === S.reportFilter);
+
+  return `
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-file-text" style="color:var(--p400)"></i> AI 방문 보고서 수신함</div>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        ${filters.map(f => `<button class="btn btn-sm ${S.reportFilter===f?'btn-primary':'btn-secondary'}" onclick="S.reportFilter='${f}';render()">${f}</button>`).join('')}
+      </div>
+    </div>
+    <div>
+      <table class="tbl">
+        <thead><tr>
+          <th>상태</th><th>제출 일시</th><th>보호사</th><th>수급자</th><th>요약</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${list.map(r => `
+          <tr onclick="openReportDetail('${r.id}')">
+            <td>
+              ${r.urgent?'<span class="badge red" style="margin-bottom:4px;display:flex;width:fit-content">요주의</span>':''}
+              <span class="badge ${r.status==='미확인'?'amber':'green'}">${r.status}</span>
+            </td>
+            <td style="font-size:12px">${r.date}</td>
+            <td><div style="font-weight:600">${r.worker}</div></td>
+            <td>${r.recipient} 어르신<div class="text-sm text-muted">${r.age}세</div></td>
+            <td style="max-width:240px"><div style="font-size:12px;color:var(--text2);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.summary}</div></td>
+            <td><i class="ti ti-chevron-right" style="color:var(--text3)"></i></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function openReportDetail(id) {
+  const r = REPORTS.find(x => x.id === id);
+  if (!r) return;
+
+  const header = `
+    <div style="flex:1">
+      <div style="display:flex;gap:7px;margin-bottom:6px">
+        <span class="badge ${r.status==='미확인'?'amber':'green'}">${r.status}</span>
+        ${r.urgent?'<span class="badge red">요주의</span>':''}
+        <span class="badge purple"><i class="ti ti-sparkles" style="font-size:10px"></i> AI 작성</span>
+      </div>
+      <div style="font-size:16px;font-weight:700">${r.recipient} 어르신 방문 보고서</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px">${r.date} · ${r.worker} 보호사</div>
+    </div>
+    <button onclick="closePanel()" style="width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center">
+      <i class="ti ti-x" style="font-size:15px"></i>
+    </button>`;
+
+  const sections = [
+    {icon:'user', title:'1. 대상자 기본 정보', rows:[
+      ['수급자 성명', r.recipient+' ('+r.age+'세)'],
+      ['작성자', '요양보호사 '+r.worker],
+      ['보고 일자', r.date.split(' ')[0]],
+      ['방문 시간', r.date.split(' ')[1]+' (방문 종료 기준)'],
+    ]},
+    {icon:'eye', title:'2. 신체 및 인지 상태 관찰', rows:[
+      ['관찰 내용', r.summary],
+    ]},
+    {icon:'heart-handshake', title:'3. 제공된 요양서비스', rows:[
+      ['제공 서비스', r.services],
+    ]},
+    {icon:'send', title:'4. 전달 사항', rows:[
+      ['특이사항', r.note],
+    ]},
+  ];
+
+  const body = sections.map(sec => `
+    <div class="dp-section">
+      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="background:var(--g50);padding:9px 14px;font-size:12px;font-weight:700;color:var(--g600);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-${sec.icon}" style="font-size:14px"></i>${sec.title}
+        </div>
+        ${sec.rows.map(([k,v]) => `
+        <div style="display:flex;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px">
+          <div style="color:var(--text3);width:80px;flex-shrink:0">${k}</div>
+          <div style="color:var(--text);flex:1;line-height:1.6">${v}</div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const footer = r.status === '미확인' ? `
+    <button class="btn btn-secondary" onclick="closePanel()" style="flex:1">닫기</button>
+    <button class="btn" style="flex:1;background:var(--b600);color:#fff">보호자 공유</button>
+    <button class="btn btn-primary" style="flex:2" onclick="markReportRead('${r.id}')">
+      <i class="ti ti-check"></i> 확인 완료
+    </button>` :
+    `<button class="btn btn-secondary" onclick="closePanel()" style="flex:1">닫기</button>
+    <button class="btn btn-primary" style="flex:1">보호자 공유</button>`;
+
+  openPanel(header, body, footer);
+}
+
+function markReportRead(id) {
+  const r = REPORTS.find(x => x.id === id);
+  if (r) { r.status = '확인'; closePanel(); render(); }
+}
+
+/* ─── STAFF ─── */
+function renderStaff() {
+  const statusColor = {근무중:'green',귀가:'gray',대기:'amber',휴가:'blue'};
+  const riskColor   = {낮음:'green',중간:'amber',높음:'red'};
+
+  return `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+    ${[
+      {l:'이달 이직',    v:'0명', sub:'업계 평균: 월 4.2%', color:'var(--g600)', bg:'var(--g50)'},
+      {l:'평균 근속기간', v:'2.8년', sub:'전년 2.1년 대비 +33%', color:'var(--b600)', bg:'var(--b50)'},
+      {l:'AI 보고서 평균 사용률', v:'93%', sub:'전월 81% 대비 +12%p', color:'var(--p600)', bg:'var(--p50)'},
+    ].map(s => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px">
+      <div style="font-size:24px;font-weight:700;color:${s.color};margin-bottom:3px">${s.v}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${s.l}</div>
+      <div style="font-size:11px;color:var(--text3)">${s.sub}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="ti ti-users" style="color:var(--g400)"></i> 요양보호사 현황</div></div>
+    <div>
+      <table class="tbl">
+        <thead><tr><th>이름</th><th>등급</th><th>근무 상태</th><th>오늘 방문</th><th>AI 보고서</th><th>이직 위험도</th><th>입사</th></tr></thead>
+        <tbody>
+          ${STAFF.map(s => `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--g50);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--g600)">${s.ini}</div>
+                <span style="font-weight:600">${s.name}</span>
+              </div>
+            </td>
+            <td><span class="badge gray">${s.level}</span></td>
+            <td><span class="badge ${statusColor[s.status]||'gray'}">${s.status}</span></td>
+            <td><span style="font-weight:600">${s.done}</span><span style="color:var(--text3)">/${s.visits}건</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1;background:var(--bg);border-radius:4px;height:6px;overflow:hidden">
+                  <div style="width:${s.ai};height:100%;background:var(--g400);border-radius:4px"></div>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:var(--g600)">${s.ai}</span>
+              </div>
+            </td>
+            <td><span class="badge ${riskColor[s.turnRisk]}">${s.turnRisk}</span></td>
+            <td style="font-size:12px;color:var(--text3)">${s.since}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ─── RECIPIENTS ─── */
+function renderRecipients() {
+  const recs = [
+    {name:'이○○', age:88, level:'2등급', worker:'김민지', visits:24, lastDate:'2026.05.16', alert:'우울감 지속 관찰 중'},
+    {name:'김○○', age:76, level:'3등급', worker:'이수진', visits:18, lastDate:'2026.05.16', alert:'무릎 통증 증가'},
+    {name:'최○○', age:71, level:'4등급', worker:'김민지', visits:20, lastDate:'2026.05.16', alert:'보호 이벤트 이력 있음'},
+    {name:'박○○', age:83, level:'3등급', worker:'최은영', visits:15, lastDate:'2026.05.16', alert:null},
+    {name:'정○○', age:79, level:'3등급', worker:'이수진', visits:12, lastDate:'2026.05.12', alert:null},
+    {name:'윤○○', age:91, level:'1등급', worker:'박지연', visits:28, lastDate:'2026.05.10', alert:'최근 방문 공백 5일'},
+  ];
+
+  return `
+  <div class="card">
+    <div class="card-header" style="padding-bottom:14px">
+      <div class="card-title"><i class="ti ti-home-heart" style="color:var(--g400)"></i> 수급자 관리</div>
+      <div class="text-sm text-muted" style="margin-left:auto">총 ${recs.length}명 · 활성 ${recs.length}명</div>
+    </div>
+    <div>
+      <table class="tbl">
+        <thead><tr><th>수급자</th><th>등급</th><th>담당 보호사</th><th>누적 방문</th><th>최근 방문</th><th>알림</th></tr></thead>
+        <tbody>
+          ${recs.map(r => `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--g50);color:var(--g600);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${r.name.slice(0,2)}</div>
+                <div><div style="font-weight:600">${r.name} 어르신</div><div class="text-sm text-muted">${r.age}세</div></div>
+              </div>
+            </td>
+            <td><span class="badge gray">${r.level}</span></td>
+            <td style="font-weight:500">${r.worker}</td>
+            <td style="font-weight:600">${r.visits}건</td>
+            <td style="font-size:12px;color:var(--text3)">${r.lastDate}</td>
+            <td>
+              ${r.alert
+                ? `<div style="font-size:11px;color:var(--a600);background:var(--a50);padding:3px 8px;border-radius:6px;font-weight:600;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-alert-circle" style="font-size:11px"></i>${r.alert}</div>`
+                : '<span class="text-muted text-xs">—</span>'}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* INIT */
+render();
+
+// TTS voices 사전 로딩 (일부 브라우저에서 필요)
+if('speechSynthesis' in window){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
+}
+
+/* ══ WORKER JS ══ */
+
+const G={
+  mode:'corporate',corp:'dashboard',
+  wtab:'home',
+  loggedIn:false,loginStep:0,selInst:null,
+  clockInStep:-1,
+  visitStep:0,visitRec:0,
+  clChecks:{},
+  recordSel:null,recordStep:0,selRecips:[],previewIdx:0,
+  clockOutStep:-1,
+  pAlert:false,
+  recDetailIdx:null,
+  corpReportSel:null,
+  wFilter:'전체',
+  // ENHANCED: Agent monitor state
+  agentMonitorOpen:false,
+  agentLogs:[],
+  // ENHANCED: V1 voice detection state
+  v1Speaking:false,
+  v1ConvShown:0,
+  v1Timers:[],
+  // ENHANCED: Protection agent state
+  protAgentStep:0,
+  protAgentTimers:[],
+};
+
+/* ═══ DATA ═══ */
+const INSTS=['서울 노원 방문요양센터','강동 케어복지관','광진구 돌봄센터','성북 복지재단'];
+const WORKERS=[
+  {name:'김민지',ini:'김민',status:'근무중',level:'고급',cnt:3,rating:4.8,langs:['한국어','영어'],ai:'98%'},
+  {name:'이수진',ini:'이수',status:'근무중',level:'중급',cnt:2,rating:4.6,langs:['한국어'],ai:'91%'},
+  {name:'웅우엔 타잉',ini:'웅타',status:'근무중',level:'중급',cnt:1,rating:4.7,langs:['한국어','베트남어'],ai:'96%'},
+  {name:'정현우',ini:'정현',status:'대기',level:'초급',cnt:0,rating:4.5,langs:['한국어','중국어'],ai:'78%'},
+  {name:'박지연',ini:'박지',status:'휴가',level:'고급',cnt:0,rating:4.9,langs:['한국어'],ai:'99%'},
+  {name:'최은영',ini:'최은',status:'근무중',level:'고급',cnt:2,rating:4.7,langs:['한국어'],ai:'94%'},
+];
+const MY_RECS=[
+  {name:'이○○',age:88,level:'2등급',condition:'치매 초기, 고혈압 이력',
+   brief:['지난주 식욕 저하 지속 — 식사량 확인 필요','2주 전 우울감 표현 ("아무것도 하기 싫어")','투약 거부 이력 있음 — 부드럽게 권유'],
+   journals:[
+     {date:'2026.05.14',time:'11:20~12:38',summary:'식사 2/3 섭취, 산책 20분, 정서 안정, 세탁 완료, 투약 보조',services:['식사 보조','세탁','산책 동행','투약 보조']},
+     {date:'2026.05.10',time:'11:15~12:40',summary:'식사 1/2 섭취 (식욕 저하), 우울감 표현, 실내 청소, 체위 변경 2회',services:['식사 보조','청소','체위 변경','정서 지원']},
+     {date:'2026.05.07',time:'11:20~12:50',summary:'식사 완료, 목욕 보조, 기분 양호, 손녀 얘기에 밝아지심',services:['목욕 보조','식사 보조','정서 지원']},
+   ]},
+  {name:'김○○',age:76,level:'3등급',condition:'관절염, 당뇨',
+   brief:['오른쪽 무릎 통증 증가 — 이동 시 주의','식사량 평소 70% 수준 유지'],
+   journals:[
+     {date:'2026.05.14',time:'14:00~15:10',summary:'식사 2/3, 무릎 통증 호소, 이동 보조 강화, 청소 완료',services:['이동 보조','식사 보조','청소']},
+   ]},
+  {name:'최○○',age:71,level:'4등급',condition:'뇌졸중 후유증',
+   brief:['기분 변동이 있는 편 — 충분한 설명 후 서비스 제공','이동 보조 필요, 아침에 더 활기 있으심'],
+   journals:[
+     {date:'2026.05.10',time:'14:00~15:08',summary:'식사 완료, 목욕 보조, 정서 다소 불안정',services:['목욕 보조','식사 보조','정서 지원']},
+   ]},
+  {name:'박○○',age:83,level:'3등급',condition:'파킨슨',
+   brief:['낙상 위험 높음 — 이동 시 밀착 보조','가족 방문 후 정서 안정되는 경향'],
+   journals:[
+     {date:'2026.05.12',time:'09:00~10:15',summary:'식사 1/2, 투약 보조, 체위 변경 3회, 낙상 없음',services:['식사 보조','투약 보조','체위 변경']},
+   ]},
+];
+const CL_DATA=[
+  {section:'신체 및 인지 상태 관찰',items:[
+    {id:'c1',text:'식사량 감소 확인 (약 1/2 섭취)',checked:true,src:'AI 감지',warn:false,quote:'"입맛이 없어, 물만..." → 식사량 감소'},
+    {id:'c2',text:'이동 보조 시행',checked:true,src:'AI 감지',warn:false,quote:'"일어서실 때 제 손 잡으세요" → 이동 보조'},
+    {id:'c3',text:'우울감 표현 기록 ("딸이 안 와서 쓸쓸해")',checked:true,src:'AI 감지',warn:false,quote:'"딸이 안 와서 좀 쓸쓸해" → 우울감 징후'},
+    {id:'c4',text:'수면 상태 확인',checked:false,src:'AI 제안',warn:true,hint:'스케줄에 있으나 대화에서 미감지',reason:'스케줄에 수면 확인 항목이 있으나 대화에서 언급되지 않았습니다'},
+  ]},
+  {section:'제공된 요양서비스',items:[
+    {id:'c5',text:'식사 보조',checked:true,src:'AI 감지',warn:false,quote:'"어르신, 오늘은 왤케 밥을 못 드셔?" → 식사 보조 확인'},
+    {id:'c6',text:'청소 (어르신 방)',checked:true,src:'AI 감지',warn:false,quote:'"제가 방 청소 좀 도와드릴게요" → 주거환경 청결'},
+    {id:'c7',text:'체위 변경 2회',checked:true,src:'AI 감지',warn:false,quote:'이동 보조 중 체위 변경 2회 감지'},
+    {id:'c8',text:'투약 보조',checked:false,src:'AI 제안',warn:true,hint:'이 어르신 투약 보조가 오늘 일정에 있었어요.',reason:'스케줄: 투약 보조 14:00 — 대화에서 미확인'},
+  ]},
+  {section:'특이사항 및 전달사항',items:[
+    {id:'c9',text:'민감정보 1건 자동 마스킹 완료',checked:true,src:'AI 처리',warn:false,quote:'개인정보 보호 Agent가 이름 1건 마스킹'},
+    {id:'c10',text:'우울감 지속 — 복지사 연계 권장',checked:true,src:'AI 제안',warn:false,reason:'과거 기록 비교: 2주 연속 우울감 표현 → 연계 권장'},
+    {id:'c11',text:'낙상 위험 메모',checked:false,src:'AI 제안',warn:false,hint:'추가 기록을 권장드려요.',reason:'과거 기록에서 이동 보조 필요 반복 — 낙상 위험 메모 권장'},
+  ]},
+];
+const CONV=[
+  {sp:'보호사',txt:'"어르신, 오늘은 왤케 밥을 못 드셔?"',ai:'식사량 감소 확인'},
+  {sp:'어르신',txt:'"입맛이 없어, 물만..."',ai:'구강 섭취 저하 기록'},
+  {sp:'보호사',txt:'"제가 방 청소 좀 도와드릴게요"',ai:'주거환경 청결 지원'},
+  {sp:'보호사',txt:'"일어서실 때 제 손 잡으세요"',ai:'이동 보조 시행'},
+  {sp:'어르신',txt:'"딸이 안 와서 좀 쓸쓸해"',ai:'우울감 징후 기록'},
+];
+const RECIPS=[
+  {id:'manager',name:'기관 관리자',ico:'building',bg:'#E1F5EE',c:'#0F6E56',desc:'기관 표준 보고서 양식'},
+  {id:'nurse',name:'박○○ 간호사',ico:'stethoscope',bg:'#E6F1FB',c:'#185FA5',desc:'건강 관찰 내용 중심'},
+  {id:'welfare',name:'최○○ 복지사',ico:'user-heart',bg:'#EEEDFE',c:'#534AB7',desc:'정서·생활 지원 중심'},
+  {id:'family',name:'이○○ 따님',ico:'heart',bg:'#FAEEDA',c:'#854F0B',desc:'일상어로 풀어쓴 요약'},
+];
+const REPORT_PREVIEW={
+  manager:`【 방문요양 상태변화기록지 】\n\n■ 대상자 기본 정보\n수급자: 이○○ (88세, 2등급)\n작성자: 요양보호사 김민지\n방문 일시: 2026.05.16  11:30~12:48\n\n■ 신체 및 인지 상태 관찰\n· 식사: 제공량의 1/2 섭취 (식욕 부진 지속)\n· 이동: 이동 보조 필요, 낙상 없음\n· 정서: 외로움 호소, 우울감 징후 관찰\n· 의사소통: 원활 (다소 무기력)\n\n■ 제공된 요양서비스\n[신체활동] 식사 보조, 체위 변경 2회, 이동 보조\n[가사지원] 어르신 방 청소\n[정서지원] 말벗 약 30분\n\n■ 전달 사항\n· 건의: 식사 보조 스푼 교체 필요\n· 특이사항: 우울감 지속 → 상담 연계 검토 필요`,
+  nurse:`[건강 관찰 내용 — 간호사 전달]\n\n이○○ (88세, 2등급) · 2026.05.16\n\n■ 관찰\n- 식사량 1/2 수준, 구강 섭취 저하 지속\n- 수분 보충 필요 판단됨\n- 이동 보조 필요, 낙상 위험\n\n■ 정서 변화\n- 우울감 발언 반복 확인\n→ 심리 지원 연계 검토 요청드립니다`,
+  welfare:`[복지사 연계 전달]\n\n이○○ 어르신 · 2026.05.16\n\n■ 정서·생활 현황\n- 딸 방문 없어 외로움 반복 표현\n- 식욕 감소와 전반적 무기력감 함께 나타남\n\n■ 연계 요청\n- 가족 상담 또는 정기 연락 독려\n- 인지 활동 프로그램 연계 검토`,
+  family:`안녕하세요, 이○○ 어르신 따님께 😊\n\n오늘 어머니 방문하고 왔어요!\n오늘은 밥을 조금 적게 드셨어요. 입맛이 없다고 하시더라고요. 따님 많이 보고 싶어 하셔서 전해드려요 💛\n방 청소도 하고, 이야기도 실컷 나눴어요.\n다음 방문은 5월 19일이에요. 언제든 연락 주세요!`,
+};
+const PAST_RECORDS=[
+  {date:'2026.05.14',rec:'이○○',dur:'1시간 18분',summary:'식사 2/3, 산책 20분, 세탁, 정서 안정',sent:['기관 관리자','박○○ 간호사']},
+  {date:'2026.05.12',rec:'박○○',dur:'1시간 15분',summary:'식사 1/2, 체위 변경 3회, 투약 보조',sent:['기관 관리자']},
+  {date:'2026.05.10',rec:'이○○',dur:'1시간 25분',summary:'식사 1/2 (식욕 저하), 우울감 표현, 청소',sent:['기관 관리자','최○○ 복지사']},
+];
+const CORP_REPORTS=[
+  {date:'2026.05.16',worker:'김민지',rec:'이○○',status:'미확인',urgent:true,summary:'우울감 징후 지속, 식욕 부진 — 복지사 연계 검토 필요'},
+  {date:'2026.05.16',worker:'이수진',rec:'김○○',status:'확인',urgent:false,summary:'식사량 2/3, 무릎 통증 호소, 이동 보조 강화'},
+  {date:'2026.05.16',worker:'최은영',rec:'박○○',status:'확인',urgent:false,summary:'식사 완료, 체위 변경 2회, 정서 안정'},
+];
+const PROT=[
+  {date:'2026.04.28',time:'오후 2:14',rec:'최○○',type:'폭언 감지',dur:'0:28',
+   summary:'보호사: "어르신, 청소 도와드릴게요" → "저리 꺼져!" — 목소리 임계치 초과, 22초 증거 수집',status:'기관 보고 완료'},
+  {date:'2026.03.15',time:'오전 11:02',rec:'최○○',type:'충돌 감지',dur:'0:41',
+   summary:'급격한 음성 강도 상승, 41초 영상 수집 후 상황 정상화.',status:'기관 보고 완료'},
+];
+
+/* ═══ AGENT MONITOR ═══ */
+function toggleAgentMonitor(e){
+  e.stopPropagation();
+  const mon=document.getElementById('agent-monitor');
+  G.agentMonitorOpen=!G.agentMonitorOpen;
+  mon.classList.toggle('collapsed',!G.agentMonitorOpen);
+}
+function addAgentLog(text){
+  const now=new Date();
+  const ts=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  G.agentLogs.push({ts:ts,text:text});
+  if(G.agentLogs.length>20) G.agentLogs.shift();
+  const body=document.getElementById('am-body');
+  if(body){
+    body.innerHTML=G.agentLogs.map(l=>`<div class="am-entry"><span style="color:#7F77DD">${l.ts}</span> ${l.text}</div>`).join('');
+    body.scrollTop=body.scrollHeight;
+  }
+}
+function clearAgentLogs(){G.agentLogs=[];const b=document.getElementById('am-body');if(b)b.innerHTML='';}
+
+/* ═══ HELPERS ═══ */
+function stepBarHTML(cur,steps){
+  return `<div class="step-bar">${steps.map((s,i)=>`
+    <div class="snode">
+      <div class="scircle" style="background:${i<cur?'#1D9E75':i===cur?'#0F6E56':'#e0e0e0'}">
+        ${i<cur?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':`<span style="color:${i<=cur?'#fff':'#bbb'}">${i+1}</span>`}
+      </div>
+      <span class="slabel" style="color:${i===cur?'#0F6E56':'#bbb'}">${s}</span>
+    </div>
+    ${i<steps.length-1?`<div class="sline" style="background:${i<cur?'#1D9E75':'#e0e0e0'}"></div>`:''}`).join('')}</div>`;
+}
+function backBtn(cb){return `<button onclick="${cb}" style="width:30px;height:30px;border-radius:50%;background:#f0f0f0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-arrow-left" style="font-size:14px;color:#555"></i></button>`;}
+function greenBtn(label,cb,ico=''){return `<button onclick="${cb}" style="width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px">${ico?`<i class="ti ti-${ico}"></i>`:''} ${label}</button>`;}
+
+/* ═══ ROUTING ═══ */
+function setFlowLabel(ico,txt,color='#666'){
+  const el=document.getElementById('flow-label');
+  if(el){el.innerHTML=`<i class="ti ti-${ico}" style="color:${color}"></i> ${txt}`;}
+}
+function setMode(m){
+  G.mode=m;
+  const vc2=document.getElementById('view-corporate');
+  const vw2=document.getElementById('view-worker');
+  if(vc2) vc2.style.display='none';
+  if(vw2) vw2.style.display='block';
+  if(m==='worker') renderW();
+}
+function setCorpTab(t){
+  G.corp=t;
+  ['dashboard','reports','workers','protection'].forEach(id=>{
+    document.getElementById('corp-'+id).style.display=id===t?'block':'none';
+    document.getElementById('nav-'+id).classList.toggle('active',id===t);
+  });
+}
+function setWTab(t){
+  G.wtab=t;
+  if(t==='visit') G.visitStep=0;
+  if(t==='records'){G.recordSel=null;G.recordStep=0;}
+  if(t==='home'){G.recDetailIdx=null;G.clockOutStep=-1;}
+  clearV1Timers();
+  clearProtTimers();
+  ['home','visit','records','protection'].forEach(id=>{
+    document.getElementById('wn-'+id)&&document.getElementById('wn-'+id).classList.toggle('active',id===t);
+  });
+  renderW();
+}
+function clearV1Timers(){G.v1Timers.forEach(t=>clearTimeout(t));G.v1Timers=[];G.v1ConvShown=0;G.v1Speaking=false;if('speechSynthesis' in window) window.speechSynthesis.cancel();}
+function clearProtTimers(){G.protAgentTimers.forEach(t=>clearTimeout(t));G.protAgentTimers=[];G.protAgentStep=0;}
+
+function renderW(){
+  const ps=document.getElementById('pscreen');
+  const nav=document.getElementById('pnav');
+  document.getElementById('adot')&&(document.getElementById('adot').style.display=G.pAlert?'block':'none');
+  // Show/hide agent monitor based on context
+  const am=document.getElementById('agent-monitor');
+  if(am) am.style.display=(G.loggedIn&&G.clockInStep>=3)?'block':'none';
+
+  if(!G.loggedIn){
+    nav.style.display='none';
+    setFlowLabel('login','로그인');
+    ps.innerHTML=buildLogin();return;
+  }
+  if(G.clockInStep>=0&&G.clockInStep<3){
+    nav.style.display='none';
+    setFlowLabel('sun','출근','#BA7517');
+    ps.innerHTML=buildClockIn();return;
+  }
+  nav.style.display='flex';
+  if(G.clockOutStep>=0){
+    setFlowLabel('moon','퇴근','#534AB7');
+    ps.innerHTML=buildClockOut();return;
+  }
+  const LABELS={home:['home','근무 중','#0F6E56'],visit:['microphone','방문','#0F6E56'],records:['notebook','기록','#0F6E56'],protection:['shield','보호','#E24B4A']};
+  const lb=LABELS[G.wtab]||LABELS.home;
+  setFlowLabel(lb[0],lb[1],lb[2]);
+  if(G.wtab==='home') ps.innerHTML=G.recDetailIdx!==null?buildRecDetail():buildHome();
+  else if(G.wtab==='visit') ps.innerHTML=buildVisit();
+  else if(G.wtab==='records') ps.innerHTML=buildRecords();
+  else ps.innerHTML=buildProt();
+}
+
+/* ══════════════════════════════
+   LOGIN
+══════════════════════════════ */
+function buildLogin(){
+  if(G.loginStep===0) return `
+  <div class="grad-bg">
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px;letter-spacing:-.5px">CareLink AI</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:28px">방문돌봄 Agent 플랫폼</div>
+    <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:18px;backdrop-filter:blur(8px)">
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.5px;margin-bottom:10px;text-transform:uppercase">소속 기관 선택</div>
+      ${INSTS.map((inst,i)=>`<button class="inst-btn ${G.selInst===i?'sel':''}" onclick="G.selInst=${i};renderW()" style="width:100%;padding:10px 14px;background:rgba(255,255,255,${G.selInst===i?.35:.2});border:1.5px solid rgba(255,255,255,${G.selInst===i?.7:.3});border-radius:10px;color:#fff;font-family:inherit;font-size:13px;text-align:left;cursor:pointer;margin-bottom:7px;display:flex;align-items:center;gap:10px;font-weight:500"><i class="ti ti-building" style="opacity:.7"></i>${inst}</button>`).join('')}
+      <button onclick="if(G.selInst!==null){G.loginStep=1;renderW()}" style="width:100%;padding:11px;margin-top:4px;background:rgba(255,255,255,${G.selInst!==null?.9:.3});color:#0F6E56;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">다음 →</button>
+    </div>
+  </div>`;
+  return `
+  <div class="grad-bg">
+    <div onclick="G.loginStep=0;renderW()" style="display:inline-flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;margin-bottom:20px"><i class="ti ti-arrow-left"></i> ${INSTS[G.selInst]}</div>
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px">CareLink AI</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:28px">요양보호사로 로그인</div>
+    <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:18px;backdrop-filter:blur(8px)">
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.5px;margin-bottom:7px">아이디</div>
+      <input style="width:100%;padding:10px 14px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-family:inherit;font-size:13px;margin-bottom:14px" placeholder="아이디" value="kimminji">
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.5px;margin-bottom:7px">비밀번호</div>
+      <input type="password" style="width:100%;padding:10px 14px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-family:inherit;font-size:13px;margin-bottom:18px" value="●●●●●●">
+      <button onclick="G.loggedIn=true;G.clockInStep=0;renderW()" style="width:100%;padding:12px;background:#fff;color:#0F6E56;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:-.3px">로그인</button>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.6);margin-top:12px">생체인증으로도 로그인 가능해요</div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════
+   출근 FLOW (3 steps)
+══════════════════════════════ */
+function buildClockIn(){
+  if(G.clockInStep===0) return buildCI0();
+  if(G.clockInStep===1) return buildCI1();
+  return buildCI2();
+}
+function buildCI0(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#085041;margin-bottom:3px">출근 확인</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">2026년 5월 16일 금요일</div>
+    ${stepBarHTML(0,['출근 확인','이용 동의','일정 확인'])}
+    <div style="background:linear-gradient(135deg,#0F6E56,#1D9E75);border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:16px">
+      <i class="ti ti-sun" style="font-size:36px;margin-bottom:8px;display:block;opacity:.9"></i>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">김민지 보호사님, 안녕하세요!</div>
+      <div style="font-size:11px;opacity:.8">오늘 방문 일정 3건이 있습니다</div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      ${[['소속 기관','서울 노원 방문요양센터'],['오늘 일정','3건 방문'],['근무 시작','자동 기록됨']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:12px"><span style="color:#888">${k}</span><span style="font-weight:600;color:#333">${v}</span></div>`).join('')}
+    </div>
+    ${greenBtn('출근하기','G.clockInStep=1;renderW()','login')}
+  </div>`;
+}
+function buildCI1(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#085041;margin-bottom:3px">이용 동의 확인</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">방문 전 반드시 확인하세요</div>
+    ${stepBarHTML(1,['출근 확인','이용 동의','일정 확인'])}
+    <div style="background:#FAEEDA;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:#854F0B;line-height:1.7">
+      <div style="font-weight:700;margin-bottom:4px"><i class="ti ti-info-circle"></i> 오늘 녹음·기록 안내</div>
+      방문 중 음성이 AI를 통해 요양 기록으로 변환됩니다.<br>
+      돌봄 및 건강 관련 정보 외 내용은 자동 폐기됩니다.<br>
+      이상 감지 시 증거 수집이 자동 진행될 수 있습니다.
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title"><i class="ti ti-users" style="color:#1D9E75"></i> 대상자 동의 확인</div>
+      ${MY_RECS.slice(0,3).map((r,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:${i<2?'1px solid #f5f5f5':'none'}">
+        <div class="avatar" style="width:32px;height:32px;background:#E1F5EE;color:#0F6E56;font-size:11px">${r.name.slice(0,2)}</div>
+        <div style="flex:1;font-size:12px;font-weight:600;color:#222">${r.name} 어르신</div>
+        <div onclick="this.innerHTML='<i class=\\'ti ti-check\\' style=\\'color:#0F6E56\\'></i> 동의 확인';this.style.background='#E1F5EE';this.style.color='#0F6E56';this.style.borderColor='#9FE1CB'" style="padding:5px 10px;font-size:11px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;color:#888">동의 확인</div>
+      </div>`).join('')}
+    </div>
+    ${greenBtn('다음: 일정 확인','G.clockInStep=2;renderW()','arrow-right')}
+  </div>`;
+}
+function buildCI2(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#085041;margin-bottom:3px">오늘 일정 확인</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">전달사항과 특이사항을 확인하세요</div>
+    ${stepBarHTML(2,['출근 확인','이용 동의','일정 확인'])}
+    <div class="card" style="margin-bottom:12px">
+      ${[
+        {t:'09:00',r:'이○○',tasks:'식사 보조·청소',note:'식욕 저하 지속 확인 요망'},
+        {t:'11:30',r:'김○○',tasks:'이동 보조·식사 보조',note:'무릎 통증 확인'},
+        {t:'14:00',r:'최○○',tasks:'목욕 보조·청소',note:'기분 변동 있는 편 — 충분히 설명 후 진행'},
+      ].map((v,i)=>`
+      <div style="padding:9px 0;${i<2?'border-bottom:1px solid #f5f5f5':''}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;color:#1D9E75;width:34px">${v.t}</span>
+          <span style="font-size:12px;font-weight:700;color:#222">${v.r} 어르신</span>
+          <span style="font-size:10px;color:#888;margin-left:4px">${v.tasks}</span>
+        </div>
+        <div style="font-size:11px;color:#BA7517;background:#FAEEDA;border-radius:6px;padding:4px 8px;margin-left:42px">${v.note}</div>
+      </div>`).join('')}
+    </div>
+    ${greenBtn('준비 완료 — 근무 시작','G.clockInStep=3;renderW()','check')}
+  </div>`;
+}
+
+/* ══════════════════════════════
+   HOME
+══════════════════════════════ */
+function buildHome(){
+  const next=MY_RECS[1];
+  return `<div class="ws">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;color:#aaa">안녕하세요</div>
+        <div style="font-size:17px;font-weight:700;color:#085041;letter-spacing:-.5px">김민지 보호사님</div>
+      </div>
+      <button onclick="G.clockOutStep=0;renderW()" style="padding:7px 13px;background:#EEEDFE;color:#534AB7;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px"><i class="ti ti-moon" style="font-size:12px"></i> 퇴근하기</button>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title"><i class="ti ti-calendar" style="color:#1D9E75"></i> 오늘 일정</div>
+      ${[
+        {t:'09:00',r:'이○○',age:88,tasks:'식사 보조·청소',s:'done',ri:0},
+        {t:'11:30',r:'김○○',age:76,tasks:'이동 보조·식사 보조',s:'active',ri:1},
+        {t:'14:00',r:'최○○',age:71,tasks:'목욕 보조·청소',s:'upcoming',ri:2},
+      ].map((v,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i<2?'border-bottom:1px solid #f5f5f5':''}">
+        <div style="width:36px;font-size:11px;font-weight:700;color:${v.s==='active'?'#0F6E56':'#bbb'}">${v.t}</div>
+        <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${v.s==='done'?'#ccc':v.s==='active'?'#1D9E75':'#ddd'}"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:${v.s==='done'?'#bbb':'#222'}">${v.r}(${v.age}세)${v.s==='active'?` <span class="chip" style="background:#E1F5EE;color:#0F6E56;font-size:9px">진행중</span>`:''}</div>
+          <div style="font-size:10px;color:#bbb;margin-top:1px">${v.tasks}</div>
+        </div>
+        ${v.s!=='done'?`<button onclick="G.visitRec=${v.ri};setWTab('visit')" style="padding:5px 10px;background:${v.s==='active'?'#1D9E75':'#f0f0f0'};color:${v.s==='active'?'#fff':'#888'};border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">${v.s==='active'?'방문중':'방문'}</button>`:''}
+      </div>`).join('')}
+    </div>
+    <div style="background:linear-gradient(135deg,#E1F5EE,#d0f0e4);border-radius:14px;padding:13px;margin-bottom:14px;border:1px solid #b8e8d4">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:9px">
+        <i class="ti ti-sparkles" style="font-size:13px;color:#0F6E56"></i>
+        <span style="font-size:12px;font-weight:700;color:#085041">다음 방문 AI 브리핑</span>
+        <span style="font-size:10px;color:#0F6E56;background:rgba(255,255,255,.6);padding:2px 7px;border-radius:10px;font-weight:600">${next.name} 어르신</span>
+      </div>
+      ${next.brief.map(a=>`<div style="display:flex;gap:6px;margin-bottom:5px"><i class="ti ti-alert-circle" style="font-size:11px;color:#BA7517;margin-top:2px;flex-shrink:0"></i><div style="font-size:11px;color:#333;line-height:1.5">${a}</div></div>`).join('')}
+      <button onclick="G.visitRec=1;setWTab('visit')" style="width:100%;margin-top:8px;padding:8px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-microphone"></i> 방문 시작하기</button>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:9px">내 수급자 목록</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      ${MY_RECS.map((r,i)=>`
+      <div onclick="G.recDetailIdx=${i};renderW()" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #eee;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+          <div class="avatar" style="width:32px;height:32px;background:#E1F5EE;color:#0F6E56;font-size:11px">${r.name.slice(0,2)}</div>
+          <div><div style="font-size:12px;font-weight:700;color:#222">${r.name}</div><div style="font-size:10px;color:#aaa">${r.age}세·${r.level}</div></div>
+        </div>
+        <div style="font-size:10px;color:#888;line-height:1.4">${r.condition}</div>
+        <div style="margin-top:7px;font-size:10px;color:#1D9E75;font-weight:600"><i class="ti ti-notebook" style="font-size:10px"></i> 일지 ${r.journals.length}건 →</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════
+   REC DETAIL
+══════════════════════════════ */
+function buildRecDetail(){
+  const r=MY_RECS[G.recDetailIdx];
+  return `<div class="ws fade-in">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      ${backBtn('G.recDetailIdx=null;renderW()')}
+      <div><div style="font-size:15px;font-weight:700;color:#085041">${r.name} 어르신</div><div style="font-size:11px;color:#aaa;margin-top:1px">${r.age}세 · ${r.level} · ${r.condition}</div></div>
+    </div>
+    <div style="background:#E1F5EE;border-radius:12px;padding:11px;margin-bottom:14px;border:1px solid #b8e8d4">
+      <div style="font-size:11px;font-weight:700;color:#0F6E56;margin-bottom:7px;display:flex;align-items:center;gap:5px"><i class="ti ti-sparkles"></i> AI 주의사항</div>
+      ${r.brief.map(a=>`<div style="display:flex;gap:5px;margin-bottom:5px"><i class="ti ti-point" style="font-size:11px;color:#1D9E75;margin-top:2px;flex-shrink:0"></i><div style="font-size:11px;color:#333;line-height:1.5">${a}</div></div>`).join('')}
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:9px;display:flex;justify-content:space-between"><span>방문 일지</span><span style="font-size:11px;color:#aaa;font-weight:400">${r.journals.length}건</span></div>
+    ${r.journals.map((j,i)=>`
+    <div onclick="toggleJournal(${i})" style="background:#fff;border-radius:12px;padding:12px;margin-bottom:7px;border:1px solid #eee;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#222">${j.date}</div><div style="font-size:10px;color:#aaa;margin-top:1px">${j.time}</div></div>
+        <i class="ti ti-chevron-down" style="font-size:14px;color:#bbb" id="jico-${i}"></i>
+      </div>
+      <div id="jbody-${i}" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid #f5f5f5">
+        <div style="font-size:12px;color:#444;line-height:1.7;margin-bottom:8px">${j.summary}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">${j.services.map(s=>`<span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:2px 7px;border-radius:10px;font-weight:600">${s}</span>`).join('')}</div>
+      </div>
+    </div>`).join('')}
+    <div style="margin-top:8px">${greenBtn('방문 시작하기',`G.visitRec=${G.recDetailIdx};setWTab('visit')`,'microphone')}</div>
+  </div>`;
+}
+function toggleJournal(i){
+  const b=document.getElementById('jbody-'+i),ic=document.getElementById('jico-'+i);
+  const open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  ic.style.transform=open?'':'rotate(180deg)';
+}
+
+/* ══════════════════════════════
+   VISIT FLOW (5 steps)
+   0=선택 1=방문중 2=AI분석 3=체크리스트 4=완료
+══════════════════════════════ */
+function buildVisit(){
+  if(G.visitStep===0) return buildV0();
+  if(G.visitStep===1) return buildV1();
+  if(G.visitStep===2) return buildV2();
+  if(G.visitStep===3) return buildV3();
+  return buildV4();
+}
+function buildV0(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#085041;margin-bottom:4px">방문 시작</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">선택하면 녹음이 자동으로 시작됩니다</div>
+    ${stepBarHTML(0,['선택','방문 중','AI 분석','체크리스트','완료'])}
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${MY_RECS.map((r,i)=>`
+      <div onclick="G.visitRec=${i};G.visitStep=1;clearAgentLogs();renderW();startV1Simulation()" style="background:#fff;border:2px solid ${G.visitRec===i?'#1D9E75':'#eee'};border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px">
+        <div class="avatar" style="width:40px;height:40px;background:#E1F5EE;color:#0F6E56;font-size:13px">${r.name.slice(0,2)}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#222">${r.name} 어르신</div><div style="font-size:11px;color:#aaa;margin-top:1px">${r.age}세 · ${r.level}</div></div>
+        <i class="ti ti-chevron-right" style="font-size:14px;color:#ddd"></i>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ═══ ENHANCED buildV1 — 방문 진행 중 with waveform + voice detection ═══ */
+function buildV1(){
+  const rec=MY_RECS[G.visitRec];
+  let bars='';
+  for(let i=0;i<20;i++){
+    const ht=8+Math.abs(Math.sin(i*.72))*26;
+    bars+=`<div class="wave-bar" id="wb${i}" style="height:${ht}px;animation:wv ${(.5+Math.random()*.5).toFixed(1)}s ease-in-out ${(i*.055).toFixed(2)}s infinite"></div>`;
+  }
+  return `<div class="ws fade-in">
+    <div style="font-size:14px;font-weight:700;color:#085041;margin-bottom:14px">방문 진행 중</div>
+    ${stepBarHTML(1,['선택','방문 중','AI 분석','체크리스트','완료'])}
+    <div style="background:linear-gradient(135deg,#0F6E56,#1D9E75);border-radius:16px;padding:15px;margin-bottom:13px;color:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
+        <div class="avatar" style="width:42px;height:42px;background:rgba(255,255,255,.2);color:#fff;font-size:13px">${rec.name.slice(0,2)}</div>
+        <div><div style="font-size:14px;font-weight:700">${rec.name} 어르신 (${rec.age}세)</div><div style="font-size:11px;opacity:.8;margin-top:1px">${rec.level} · ${rec.condition}</div></div>
+      </div>
+      <div style="background:rgba(0,0,0,.15);border-radius:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#ff5c5c" class="pulse-dot"></div>
+          <span style="font-size:12px;font-weight:700">REC · 00:42</span>
+          <span style="margin-left:auto;font-size:10px;opacity:.7">백그라운드 녹음 중</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:2px;height:34px" id="v1-waveform">${bars}</div>
+        <!-- ENHANCED: Voice detection status -->
+        <div id="v1-voice-status" style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.1)">
+          <span style="font-size:14px">🔇</span>
+          <span style="color:rgba(255,255,255,.7)">침묵 감지 — 전사 대기</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title"><i class="ti ti-sparkles" style="color:#1D9E75"></i> AI 실시간 기록 변환</div>
+      <div id="v1-conv-list">
+        <!-- Conversation items will appear here via simulation -->
+      </div>
+      <div id="v1-typing" style="padding:5px 0;font-size:10px;color:#bbb;display:none">
+        <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 변환 중...
+      </div>
+    </div>
+    <!-- ENHANCED: PII Agent badge -->
+    <div id="v1-pii-badge" style="background:#f0f8f5;border-radius:10px;padding:9px 12px;margin-bottom:11px;display:flex;gap:8px;align-items:center;border:1px solid #d0eadf">
+      <i class="ti ti-shield-lock" style="font-size:15px;color:#1D9E75;flex-shrink:0"></i>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:#0F6E56">🔒 개인정보 보호 Agent 활성</div>
+        <div style="font-size:10px;color:#888;margin-top:1px" id="v1-pii-text">음성 데이터 실시간 모니터링 중</div>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#1D9E75" class="pulse-dot"></div>
+    </div>
+    <div style="background:#f0f8f5;border-radius:10px;padding:9px 12px;margin-bottom:11px;display:flex;gap:8px;align-items:center;border:1px solid #d0eadf">
+      <i class="ti ti-shield-check" style="font-size:15px;color:#1D9E75;flex-shrink:0"></i>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:#0F6E56">보호 모드 항상 활성</div>
+        <div style="font-size:10px;color:#888;margin-top:1px">음성 녹음 중 — 데시벨 급증·충돌 감지 시 영상 자동 시작</div>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#1D9E75" class="pulse-dot"></div>
+    </div>
+    <!-- 복약 알림 카드 (시뮬레이션 중 나타남) -->
+    <div id="v1-med-alert" style="display:none;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:12px;padding:13px 14px;margin-bottom:11px;color:#fff;animation:agentStepIn .5s ease both">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-pill" style="font-size:18px"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">💊 복약 시간 알림</div>
+          <div style="font-size:10px;opacity:.8;margin-top:1px" id="v1-med-text">고혈압약 (아침 식후 30분)</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#60A5FA" class="pulse-dot"></div>
+      </div>
+      <div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.6">
+        <div id="v1-med-detail">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="opacity:.8">약품명</span><span style="font-weight:600">아모디핀 5mg</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="opacity:.8">복용법</span><span style="font-weight:600">1정, 물과 함께</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="opacity:.8">상태</span><span style="font-weight:700;color:#93C5FD" id="v1-med-status">🔔 음성 안내 중...</span></div>
+        </div>
+      </div>
+      <button onclick="confirmMedication()" id="v1-med-btn" style="margin-top:8px;width:100%;padding:8px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">
+        <i class="ti ti-check"></i> 복약 완료 확인
+      </button>
+    </div>
+    <button onclick="clearV1Timers();G.visitStep=2;renderW();startV2Simulation()" style="width:100%;padding:12px;background:#E24B4A;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px"><i class="ti ti-player-stop-filled"></i> 방문 종료</button>
+  </div>`;
+}
+
+/* ═══ V1 Simulation — voice cycling + conversation appearing ═══ */
+function startV1Simulation(){
+  clearV1Timers();
+  G.v1ConvShown=0;
+  G.v1Speaking=false;
+  addAgentLog('📊 파형분석: 녹음 시작');
+  addAgentLog('🔒 PII Agent: 실시간 모니터링 활성');
+
+  // Cycle: silence(2s) → speaking(3s) → silence → speaking...
+  let cycle=0;
+  function doCycle(){
+    if(G.visitStep!==1) return;
+    const speaking=(cycle%2===1);
+    G.v1Speaking=speaking;
+    updateV1VoiceStatus(speaking);
+    if(speaking && G.v1ConvShown<CONV.length){
+      // Show typing, then conv item
+      const typEl=document.getElementById('v1-typing');
+      if(typEl) typEl.style.display='block';
+      addAgentLog('📊 파형분석: 음성 감지 → Whisper 호출');
+      const t2=setTimeout(()=>{
+        if(G.visitStep!==1) return;
+        showNextConvItem();
+        if(typEl) typEl.style.display=G.v1ConvShown<CONV.length?'block':'none';
+      },1500);
+      G.v1Timers.push(t2);
+    }
+    // PII flash at cycle 3
+    if(cycle===3){
+      const t3=setTimeout(()=>{
+        if(G.visitStep!==1) return;
+        const pii=document.getElementById('v1-pii-badge');
+        const piiText=document.getElementById('v1-pii-text');
+        if(pii){pii.classList.add('pii-flash');pii.style.borderColor='#F59E0B';}
+        if(piiText){piiText.textContent='⚠ PII 감지 → "김순자" 마스킹 처리';}
+        addAgentLog('🔒 PII Agent: \'김순자\' → \'○○○\' 마스킹');
+        const t4=setTimeout(()=>{
+          if(pii){pii.classList.remove('pii-flash');pii.style.borderColor='#d0eadf';}
+          if(piiText){piiText.textContent='마스킹 완료 — 계속 모니터링 중';}
+        },2500);
+        G.v1Timers.push(t4);
+      },1000);
+      G.v1Timers.push(t3);
+    }
+    // 복약 알림 at cycle 5
+    if(cycle===5){
+      const tMed=setTimeout(()=>{
+        if(G.visitStep!==1) return;
+        triggerMedicationAlert();
+      },1200);
+      G.v1Timers.push(tMed);
+    }
+    cycle++;
+    if(cycle<10){
+      const t=setTimeout(doCycle, speaking?3000:2000);
+      G.v1Timers.push(t);
+    }
+  }
+  const t0=setTimeout(doCycle,500);
+  G.v1Timers.push(t0);
+}
+
+/* ═══ 복약 시간 알림 (TTS + UI) ═══ */
+function triggerMedicationAlert(){
+  const alertEl=document.getElementById('v1-med-alert');
+  if(!alertEl) return;
+  // UI 표시
+  alertEl.style.display='block';
+  alertEl.scrollIntoView({behavior:'smooth',block:'nearest'});
+  addAgentLog('💊 브리핑 Agent: 복약 시간 도래 — 아모디핀 5mg');
+  addAgentLog('🔊 TTS: 음성 안내 시작');
+
+  // 브라우저 TTS로 음성 안내
+  speakMedicationReminder();
+}
+
+function speakMedicationReminder(){
+  if(!('speechSynthesis' in window)) return;
+  // 이전 발화 중단
+  window.speechSynthesis.cancel();
+
+  const rec=MY_RECS[G.visitRec];
+  const msg=new SpeechSynthesisUtterance(
+    `${rec.name} 어르신, 지금 복약 시간입니다. 아모디핀 5밀리그램, 한 알을 물과 함께 복용해 주세요.`
+  );
+  msg.lang='ko-KR';
+  msg.rate=0.9;
+  msg.pitch=1.0;
+  msg.volume=1.0;
+
+  // 한국어 음성 선택 시도
+  const voices=window.speechSynthesis.getVoices();
+  const koVoice=voices.find(v=>v.lang.startsWith('ko'));
+  if(koVoice) msg.voice=koVoice;
+
+  msg.onend=function(){
+    const status=document.getElementById('v1-med-status');
+    if(status) status.innerHTML='✅ 음성 안내 완료 — 복약 확인 대기';
+    addAgentLog('🔊 TTS: 음성 안내 완료');
+  };
+
+  // voices가 비동기 로딩될 수 있으므로 약간 지연
+  setTimeout(()=>{
+    const v2=window.speechSynthesis.getVoices();
+    const ko2=v2.find(v=>v.lang.startsWith('ko'));
+    if(ko2) msg.voice=ko2;
+    window.speechSynthesis.speak(msg);
+  },200);
+}
+
+function confirmMedication(){
+  const alertEl=document.getElementById('v1-med-alert');
+  if(!alertEl) return;
+  // 버튼 → 완료 상태로 변경
+  const btn=document.getElementById('v1-med-btn');
+  if(btn){
+    btn.innerHTML='<i class="ti ti-circle-check"></i> 복약 완료 기록됨';
+    btn.style.background='rgba(255,255,255,.3)';
+    btn.style.borderColor='rgba(255,255,255,.5)';
+    btn.disabled=true;
+  }
+  const status=document.getElementById('v1-med-status');
+  if(status) status.innerHTML='✅ 복약 완료 (보호사 확인)';
+  addAgentLog('💊 기록 Agent: 복약 완료 확인 → 체크리스트 반영');
+  addAgentLog('📋 기록 Agent: "투약 보조" 항목 자동 체크');
+
+  // 체크리스트의 투약 항목도 자동 체크 (G.clChecks에 반영)
+  G.clChecks['c8']=true;
+}
+
+function updateV1VoiceStatus(speaking){
+  const el=document.getElementById('v1-voice-status');
+  if(!el) return;
+  if(speaking){
+    el.innerHTML='<span style="font-size:14px">🎤</span><span style="color:#5DCAA5">음성 감지 — 전사 중</span>';
+    el.style.background='rgba(29,158,117,.2)';
+    // Activate wave bars
+    for(let i=0;i<20;i++){
+      const b=document.getElementById('wb'+i);
+      if(b) b.style.animationPlayState='running';
+    }
+  } else {
+    el.innerHTML='<span style="font-size:14px">🔇</span><span style="color:rgba(255,255,255,.7)">침묵 감지 — 전사 대기</span>';
+    el.style.background='rgba(255,255,255,.1)';
+    for(let i=0;i<20;i++){
+      const b=document.getElementById('wb'+i);
+      if(b) b.style.animationPlayState='paused';
+    }
+  }
+}
+
+function showNextConvItem(){
+  if(G.v1ConvShown>=CONV.length) return;
+  const c=CONV[G.v1ConvShown];
+  const list=document.getElementById('v1-conv-list');
+  if(!list) return;
+  const div=document.createElement('div');
+  div.className='agent-step';
+  div.style.cssText='padding:6px 0;border-bottom:1px solid #f5f5f5';
+  div.innerHTML=`
+    <div style="display:flex;gap:6px"><span style="font-size:10px;font-weight:700;color:${c.sp==='보호사'?'#1D9E75':'#888'};width:36px;flex-shrink:0">${c.sp}</span><span style="font-size:11px;color:#444;flex:1;line-height:1.5">${c.txt}</span></div>
+    ${c.ai?`<div style="display:flex;gap:4px;margin-top:3px;padding-left:42px"><i class="ti ti-arrow-right" style="font-size:10px;color:#1D9E75;margin-top:1px"></i><span style="font-size:10px;color:#1D9E75;font-weight:600">${c.ai}</span></div>`:''}`;
+  list.appendChild(div);
+  G.v1ConvShown++;
+  addAgentLog('📋 기록 Agent: "'+c.ai+'" 추출');
+}
+
+/* ═══ ENHANCED buildV2 — AI 분석 중 with Agent reasoning ═══ */
+function buildV2(){
+  return `<div class="ws fade-in">
+    <div style="font-size:14px;font-weight:700;color:#085041;margin-bottom:14px">AI 분석 중</div>
+    ${stepBarHTML(2,['선택','방문 중','AI 분석','체크리스트','완료'])}
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <!-- Agent reasoning steps -->
+      <div style="flex:1">
+        <div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #eee;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+            <i class="ti ti-sparkles" style="color:#1D9E75"></i> Agent 추론 과정
+          </div>
+          <div id="v2-steps">
+            <!-- Steps will appear here -->
+          </div>
+        </div>
+        <!-- Tools Used sidebar -->
+        <div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #eee">
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px">Tools Used</div>
+          <div id="v2-tools">
+            <div class="tool-item" id="v2t0"><i class="ti ti-code" style="font-size:11px"></i> get_transcript()</div>
+            <div class="tool-item" id="v2t1"><i class="ti ti-code" style="font-size:11px"></i> get_schedule()</div>
+            <div class="tool-item" id="v2t2"><i class="ti ti-code" style="font-size:11px"></i> get_past_records()</div>
+            <div class="tool-item" id="v2t3"><i class="ti ti-code" style="font-size:11px"></i> submit_checklist()</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function startV2Simulation(){
+  addAgentLog('🧠 기록 Agent: 분석 시작');
+  const steps=[
+    {delay:0, icon:'👁️', text:'전사 텍스트 분석 중...', tool:0, pct:20, log:'📋 기록 Agent: get_transcript() 호출'},
+    {delay:1200, icon:'📅', text:'스케줄 대조 중...', tool:1, pct:45, log:'📋 기록 Agent: get_schedule() 호출'},
+    {delay:2400, icon:'📊', text:'과거 기록 비교 중...', tool:2, pct:70, log:'📋 기록 Agent: get_past_records() 호출'},
+    {delay:3600, icon:'🧠', text:'누락 항목 추론 중...', tool:-1, pct:90, log:'🧠 기록 Agent: 누락 항목 추론 중'},
+    {delay:4800, icon:'✅', text:'체크리스트 생성 완료', tool:3, pct:100, log:'📋 기록 Agent: submit_checklist() 완료'},
+  ];
+  steps.forEach((s,i)=>{
+    const t=setTimeout(()=>{
+      if(G.visitStep!==2) return;
+      const container=document.getElementById('v2-steps');
+      if(!container) return;
+      const el=document.createElement('div');
+      el.className='agent-step';
+      el.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5';
+      const isLast=i===steps.length-1;
+      el.innerHTML=`
+        <span style="font-size:16px">${s.icon}</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:${isLast?'#0F6E56':'#333'}">${s.text}</div>
+          <div style="background:#f0f0f0;border-radius:3px;height:4px;margin-top:4px;overflow:hidden">
+            <div style="width:${s.pct}%;height:100%;background:${isLast?'#1D9E75':'#7F77DD'};border-radius:3px;transition:width .3s"></div>
+          </div>
+        </div>
+        ${!isLast?'<div class="spin" style="width:14px;height:14px;border:2px solid #ddd;border-top:2px solid #1D9E75;border-radius:50%"></div>':'<i class="ti ti-check" style="color:#1D9E75;font-size:16px"></i>'}`;
+      container.appendChild(el);
+      // Light up tool
+      if(s.tool>=0){
+        const toolEl=document.getElementById('v2t'+s.tool);
+        if(toolEl){
+          toolEl.classList.add('active');
+          if(i>0){
+            const prev=document.getElementById('v2t'+(s.tool-1));
+            if(prev){prev.classList.remove('active');prev.classList.add('done');}
+          }
+          if(isLast) toolEl.classList.replace('active','done');
+        }
+      }
+      addAgentLog(s.log);
+      // Auto advance after last step
+      if(isLast){
+        const t2=setTimeout(()=>{G.visitStep=3;renderW();},1200);
+        G.v1Timers.push(t2);
+      }
+    },s.delay);
+    G.v1Timers.push(t);
+  });
+}
+
+/* ═══ ENHANCED buildV3 — 체크리스트 with AI source tooltips + staggered animation ═══ */
+function buildV3(){
+  if(Object.keys(G.clChecks).length===0){
+    CL_DATA.forEach(sec=>sec.items.forEach(it=>{G.clChecks[it.id]=it.checked;}));
+  }
+  const checkedCount=Object.values(G.clChecks).filter(Boolean).length;
+  const totalCount=CL_DATA.reduce((s,sec)=>s+sec.items.length,0);
+
+  let itemIdx=0;
+  const html=`<div class="ws fade-in">
+    <div style="font-size:14px;font-weight:700;color:#085041;margin-bottom:14px">체크리스트 확인</div>
+    ${stepBarHTML(3,['선택','방문 중','AI 분석','체크리스트','완료'])}
+    <div style="background:#E1F5EE;border-radius:10px;padding:10px 13px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <i class="ti ti-sparkles" style="font-size:14px;color:#0F6E56"></i>
+      <div style="flex:1;font-size:11px;color:#0F6E56">AI가 방문 기록을 분석해 체크리스트를 생성했어요.<br>항목을 확인하고 빠진 내용을 추가하세요.</div>
+      <div style="font-size:14px;font-weight:700;color:#0F6E56">${checkedCount}/${totalCount}</div>
+    </div>
+    ${CL_DATA.map(sec=>`
+    <div class="cl-section">
+      <div class="cl-sec-title"><i class="ti ti-circle-check" style="font-size:14px;color:#1D9E75"></i>${sec.section}</div>
+      ${sec.items.map(it=>{
+        const checked=G.clChecks[it.id];
+        const delay=itemIdx*150;
+        itemIdx++;
+        const sourceInfo=it.src==='AI 감지'&&it.quote
+          ? `<div class="cl-source-tip" onclick="event.stopPropagation()" style="cursor:default"><i class="ti ti-quote" style="font-size:10px;color:#1D9E75"></i> <b>근거:</b> ${it.quote}</div>`
+          : it.src==='AI 제안'&&it.reason
+          ? `<div class="cl-source-tip" onclick="event.stopPropagation()" style="cursor:default;border-color:#d0d0f0"><i class="ti ti-bulb" style="font-size:10px;color:#534AB7"></i> <b>이유:</b> ${it.reason}</div>`
+          : '';
+        return `
+        <div class="cl-item${it.warn&&!checked?' warn':!checked?' unchecked':''}" style="animation:fadeIn .3s ease ${delay}ms both">
+          <div class="cl-check${checked?' done':''}" onclick="G.clChecks['${it.id}']=!G.clChecks['${it.id}'];renderW()">
+            ${checked?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':''}
+          </div>
+          <div class="cl-text">
+            <div style="color:${!checked&&it.warn?'#854F0B':'#333'}">${it.text}</div>
+            ${it.hint&&!checked?`<div style="font-size:10px;color:#BA7517;margin-top:3px"><i class="ti ti-bulb" style="font-size:10px"></i> ${it.hint}</div>`:''}
+            ${sourceInfo}
+          </div>
+          <span class="cl-badge" style="background:${it.src==='AI 감지'?'#E1F5EE':it.src==='미기록'||it.src==='미확인'?'#FAEEDA':it.src==='AI 제안'?'#EEEDFE':it.src==='AI 처리'?'#f0f0f0':'#f0f0f0'};color:${it.src==='AI 감지'?'#0F6E56':it.src==='미기록'||it.src==='미확인'?'#854F0B':it.src==='AI 제안'?'#534AB7':'#888'}">${it.src}</span>
+        </div>`;
+      }).join('')}
+    </div>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">내용 수정</button>
+      <button onclick="G.visitStep=4;renderW()" style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">확인 완료 → 보고서 생성</button>
+    </div>
+  </div>`;
+  return html;
+}
+
+function buildV4(){
+  const rec=MY_RECS[G.visitRec];
+  return `<div class="ws fade-in" style="display:flex;flex-direction:column;align-items:center;padding-top:20px">
+    ${stepBarHTML(4,['선택','방문 중','AI 분석','체크리스트','완료'])}
+    <div style="width:60px;height:60px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><i class="ti ti-circle-check" style="font-size:32px;color:#1D9E75"></i></div>
+    <div style="font-size:18px;font-weight:700;color:#085041;margin-bottom:6px">방문 완료</div>
+    <div style="font-size:12px;color:#888;margin-bottom:18px;text-align:center;line-height:1.7">${rec.name} 어르신 기록 저장 완료<br><span style="color:#1D9E75">기록 탭에서 보고서를 전송하세요</span></div>
+    <div style="display:flex;gap:8px;width:100%;margin-bottom:12px">
+      ${[{v:'1:12',l:'방문 시간',bg:'#E1F5EE',c:'#0F6E56'},{v:'11/11',l:'체크 완료',bg:'#EEEDFE',c:'#534AB7'},{v:'1건',l:'마스킹',bg:'#FAEEDA',c:'#854F0B'}].map(s=>`<div style="flex:1;background:${s.bg};border-radius:10px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:700;color:${s.c}">${s.v}</div><div style="font-size:9px;color:${s.c};opacity:.8;margin-top:1px">${s.l}</div></div>`).join('')}
+    </div>
+    <button onclick="setWTab('records')" style="width:100%;padding:11px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">기록 탭에서 보고서 전송 →</button>
+    <button onclick="setWTab('home')" style="width:100%;padding:10px;background:#fff;color:#888;border:1px solid #eee;border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;margin-top:7px">홈으로</button>
+  </div>`;
+}
+
+/* ══════════════════════════════
+   RECORDS & REPORT
+══════════════════════════════ */
+function buildRecords(){
+  if(G.recordSel!==null&&G.recordStep===1) return buildRecSend();
+  if(G.recordSel!==null&&G.recordStep===2) return buildRecPreview();
+  if(G.recordSel!==null&&G.recordStep===3) return buildReportView();
+  return buildRecList();
+}
+function buildRecList(){
+  const newR={date:'2026.05.16',rec:MY_RECS[G.visitRec].name,dur:'1시간 12분',summary:'식사 1/2 섭취, 이동 보조, 청소, 우울감 표현, 체위 변경 2회',sent:[]};
+  const all=[newR,...PAST_RECORDS];
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#085041;margin-bottom:4px">방문 기록</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:14px">기록을 선택해 보고서를 생성·전송하세요</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${all.map((r,i)=>`
+      <div onclick="G.recordSel=${i};G.recordStep=3;G.selRecips=[];renderW()" style="background:#fff;border-radius:12px;padding:12px;border:${i===0?'2px solid #1D9E75':'1px solid #eee'};cursor:pointer;position:relative">
+        ${i===0?'<div style="position:absolute;top:10px;right:11px;font-size:10px;background:#1D9E75;color:#fff;padding:2px 7px;border-radius:8px;font-weight:700">새 기록</div>':''}
+        <div style="font-size:11px;color:#aaa;margin-bottom:4px">${r.date} · ${r.rec} 어르신 · ${r.dur}</div>
+        <div style="font-size:12px;color:#333;line-height:1.5;margin-bottom:7px">${r.summary}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${r.sent.length===0?`<span style="font-size:10px;color:#BA7517;background:#FAEEDA;padding:2px 7px;border-radius:6px;font-weight:600">미전송</span>`:r.sent.map(s=>`<span style="font-size:10px;color:#1D9E75;background:#E1F5EE;padding:2px 7px;border-radius:6px;font-weight:600">${s}</span>`).join('')}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+function buildReportView(){
+  const all=[{date:'2026.05.16',rec:MY_RECS[G.visitRec].name,time:'11:30 ~ 12:42',dur:'1시간 12분'},...PAST_RECORDS.map(r=>({...r,time:'—'}))];
+  const r=all[G.recordSel];
+  return `<div class="ws fade-in">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">${backBtn('G.recordSel=null;G.recordStep=0;renderW()')}<span style="font-size:15px;font-weight:700;color:#085041">AI 방문 보고서</span><span class="chip" style="background:#E1F5EE;color:#0F6E56;font-size:10px;margin-left:auto"><i class="ti ti-sparkles" style="font-size:10px"></i> AI 작성</span></div>
+    <div class="rsec"><div class="rsec-hdr"><i class="ti ti-user"></i> 1. 대상자 기본 정보</div><div class="rsec-body">
+      ${[['수급자 성명',r.rec],['작성자','요양보호사 김민지'],['보고 일자','2026년 5월 16일'],['방문 시간',r.time]].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}
+    </div></div>
+    <div class="rsec"><div class="rsec-hdr"><i class="ti ti-eye"></i> 2. 신체 및 인지 상태 관찰</div><div class="rsec-body">
+      ${[['식사·식욕','식사량 1/2 수준 (식욕 부진 지속)'],['배변·배뇨','특이사항 없음'],['수면','양호하셨다고 하심'],['인지·정서','우울감 표현 있음 — 주의'],['낙상·통증','이동 보조 필요, 낙상 없음']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval" style="color:${v.includes('주의')?'#A32D2D':'#333'}">${v}</div></div>`).join('')}
+    </div></div>
+    <div class="rsec"><div class="rsec-hdr"><i class="ti ti-heart-handshake"></i> 3. 제공된 요양서비스</div><div class="rsec-body">
+      ${[['신체활동','식사 보조, 이동 보조, 체위 변경 2회'],['가사·일상','어르신 방 청소'],['정서 지원','말벗 약 30분, 정서 지지']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}
+    </div></div>
+    <div class="rsec"><div class="rsec-hdr"><i class="ti ti-send"></i> 4. 전달 사항</div><div class="rsec-body">
+      ${[['건의사항','식사 보조 스푼 교체 필요'],['특이사항','우울감 지속 → 복지사 연계 검토']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}
+    </div></div>
+    <div style="background:#FAEEDA;border-radius:8px;padding:9px 12px;margin-bottom:13px;display:flex;gap:7px;align-items:flex-start"><i class="ti ti-shield-check" style="font-size:13px;color:#BA7517;margin-top:1px"></i><div style="font-size:11px;color:#854F0B">민감정보 1건 자동 마스킹 처리됨</div></div>
+    <div style="display:flex;gap:8px">
+      <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">수정</button>
+      <button onclick="G.recordStep=1;G.selRecips=[];renderW()" style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"><i class="ti ti-send"></i> 전송 대상 선택</button>
+    </div>
+  </div>`;
+}
+function buildRecSend(){
+  return `<div class="ws fade-in">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">${backBtn('G.recordStep=3;renderW()')}<span style="font-size:15px;font-weight:700;color:#085041">전송 대상 선택</span></div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6">수신자에 따라 AI가 보고서를 자동으로 재편집합니다</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+      ${RECIPS.map(rec=>{const sel=G.selRecips.includes(rec.id);return `
+      <div onclick="toggleR('${rec.id}')" style="background:#fff;border:2px solid ${sel?rec.c:'#eee'};border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:11px">
+        <div style="width:18px;height:18px;border-radius:5px;border:2px solid ${sel?rec.c:'#ddd'};background:${sel?rec.c:'#fff'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${sel?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':''}</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:${rec.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-${rec.ico}" style="font-size:15px;color:${rec.c}"></i></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#222">${rec.name}</div><div style="font-size:10px;color:#aaa;margin-top:1px">${rec.desc}</div></div>
+      </div>`;}).join('')}
+    </div>
+    <button onclick="if(G.selRecips.length>0){G.recordStep=2;G.previewIdx=0;renderW();startPreviewAgent()}" style="width:100%;padding:12px;background:${G.selRecips.length>0?'#1D9E75':'#ccc'};color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+      ${G.selRecips.length>0?`맞춤 보고서 미리보기 (${G.selRecips.length}명)`:'수신자를 선택하세요'}
+    </button>
+  </div>`;
+}
+function toggleR(id){const i=G.selRecips.indexOf(id);i>-1?G.selRecips.splice(i,1):G.selRecips.push(id);renderW();}
+
+/* ═══ ENHANCED buildRecPreview — PII Agent + Report Agent animation ═══ */
+function buildRecPreview(){
+  const id=G.selRecips[G.previewIdx];
+  const rec=RECIPS.find(r=>r.id===id);
+  const preview=REPORT_PREVIEW[id]||'';
+  return `<div class="ws fade-in">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">${backBtn('G.recordStep=1;renderW()')}<span style="font-size:15px;font-weight:700;color:#085041">AI 맞춤 보고서</span></div>
+    <div style="display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px">
+      ${G.selRecips.map((id2,i)=>{const r2=RECIPS.find(r=>r.id===id2);return `<button onclick="G.previewIdx=${i};renderW();startPreviewAgent()" style="padding:5px 11px;border-radius:20px;border:1.5px solid ${i===G.previewIdx?r2.c:'#ddd'};background:${i===G.previewIdx?r2.bg:'#fff'};color:${i===G.previewIdx?r2.c:'#888'};font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit">${r2.name.split(' ')[0]}</button>`;}).join('')}
+    </div>
+    <!-- ENHANCED: PII Agent animation -->
+    <div id="preview-pii-agent" style="margin-bottom:10px"></div>
+    <!-- ENHANCED: Report Agent badge -->
+    <div id="preview-report-agent" style="margin-bottom:10px"></div>
+    <div style="background:${rec.bg};border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;font-weight:700;color:${rec.c};display:flex;align-items:center;gap:5px"><i class="ti ti-sparkles" style="font-size:11px"></i>${rec.name}에 맞게 재편집됨</div>
+    <div id="preview-content" style="background:#fff;border-radius:12px;padding:13px;border:1px solid #eee;margin-bottom:11px;font-size:11px;color:#333;line-height:1.9;white-space:pre-wrap;font-family:'Noto Sans KR',sans-serif;display:none">${preview}</div>
+    <div style="display:flex;gap:8px">
+      <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;cursor:pointer;font-family:inherit">수정</button>
+      <button onclick="showSentDone()" style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"><i class="ti ti-send"></i> ${rec.name}에게 전송</button>
+    </div>
+  </div>`;
+}
+
+function startPreviewAgent(){
+  const id=G.selRecips[G.previewIdx];
+  const rec=RECIPS.find(r=>r.id===id);
+  const piiEl=document.getElementById('preview-pii-agent');
+  const reportEl=document.getElementById('preview-report-agent');
+  const contentEl=document.getElementById('preview-content');
+  if(!piiEl||!reportEl||!contentEl) return;
+
+  // Masking levels per recipient
+  const maskingInfo={
+    manager:{level:'Level 0',detail:'기관 표준 — 전체 정보 포함'},
+    nurse:{level:'Level 0',detail:'의료진 — 건강 정보 유지'},
+    welfare:{level:'Level 1',detail:'이름 생략, 정서 정보 유지'},
+    family:{level:'Level 2',detail:'이름 생략, 진단명 제거, 일상어 변환'},
+  };
+  const toneInfo={
+    manager:{tone:'공식 문서체',note:''},
+    nurse:{tone:'의료 전문 용어',note:''},
+    welfare:{tone:'사회복지 관점',note:''},
+    family:{tone:'친근한 말투 적용',note:'"기운이 없으셨어요" (우울감 완화 표현)'},
+  };
+  const mi=maskingInfo[id]||maskingInfo.manager;
+  const ti=toneInfo[id]||toneInfo.manager;
+
+  // Step 1: PII Agent
+  piiEl.innerHTML=`<div style="background:#FAEEDA;border-radius:10px;padding:9px 12px;border:1px solid #FAC775">
+    <div style="font-size:11px;font-weight:700;color:#854F0B;display:flex;align-items:center;gap:5px">
+      🔒 개인정보 보호 Agent
+      <div class="spin" style="width:12px;height:12px;border:2px solid #FAC775;border-top:2px solid #854F0B;border-radius:50%;margin-left:auto"></div>
+    </div>
+    <div style="font-size:10px;color:#854F0B;margin-top:4px" id="pii-step-text">수신자 변경: ${rec.name}</div>
+  </div>`;
+  contentEl.style.display='none';
+  addAgentLog('🔒 PII Agent: 수신자 변경 → '+rec.name);
+
+  setTimeout(()=>{
+    const pst=document.getElementById('pii-step-text');
+    if(pst) pst.textContent='마스킹 레벨: '+mi.level+' 적용 중...';
+    addAgentLog('🔒 PII Agent: '+mi.level+' — '+mi.detail);
+  },800);
+
+  setTimeout(()=>{
+    const pst=document.getElementById('pii-step-text');
+    if(pst) pst.textContent=mi.detail;
+    // Remove spinner
+    piiEl.innerHTML=`<div style="background:#E1F5EE;border-radius:10px;padding:9px 12px;border:1px solid #9FE1CB">
+      <div style="font-size:11px;font-weight:700;color:#0F6E56;display:flex;align-items:center;gap:5px">
+        🔒 개인정보 보호 Agent <i class="ti ti-check" style="font-size:12px;color:#0F6E56;margin-left:auto"></i>
+      </div>
+      <div style="font-size:10px;color:#0F6E56;margin-top:4px">${mi.level} 적용 완료 — ${mi.detail}</div>
+    </div>`;
+  },1600);
+
+  // Step 2: Report Agent
+  setTimeout(()=>{
+    reportEl.innerHTML=`<div class="report-agent-badge">
+      <div style="font-size:11px;font-weight:700;color:#534AB7;display:flex;align-items:center;gap:5px">
+        📄 보고서 Agent
+      </div>
+      <div style="font-size:10px;color:#534AB7;margin-top:4px">톤 분석: ${ti.tone}</div>
+      ${ti.note?`<div style="font-size:10px;color:#7F77DD;margin-top:2px">민감도 체크: ${ti.note}</div>`:''}
+    </div>`;
+    addAgentLog('📄 보고서 Agent: '+ti.tone);
+  },2000);
+
+  // Show content
+  setTimeout(()=>{
+    contentEl.style.display='block';
+    contentEl.style.animation='fadeIn .4s ease';
+  },2600);
+}
+
+function showSentDone(){
+  document.getElementById('pscreen').innerHTML=`<div class="ws" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80%">
+    <div style="width:58px;height:58px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><i class="ti ti-send" style="font-size:26px;color:#1D9E75"></i></div>
+    <div style="font-size:18px;font-weight:700;color:#085041;margin-bottom:6px">전송 완료!</div>
+    <div style="font-size:12px;color:#888;text-align:center;line-height:1.7;margin-bottom:20px">수신자 맞춤 보고서가 전송됐어요<br>퇴근 후 수기 작성이 사라졌어요</div>
+    <button onclick="G.recordSel=null;G.recordStep=0;G.previewIdx=0;renderW()" style="padding:11px 28px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">기록 목록으로</button>
+  </div>`;
+}
+
+/* ══════════════════════════════
+   퇴근 FLOW
+══════════════════════════════ */
+function buildClockOut(){
+  if(G.clockOutStep===0) return buildCO0();
+  if(G.clockOutStep===1) return buildCO1();
+  return buildCO2();
+}
+function buildCO0(){
+  const visits=[
+    {rec:'이○○',time:'09:00~10:12',sent:true,status:'전송 완료'},
+    {rec:'김○○',time:'11:30~12:48',sent:true,status:'전송 완료'},
+    {rec:'최○○',time:'14:00~15:08',sent:false,status:'⚠ 미전송'},
+  ];
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#534AB7;margin-bottom:4px">근무 기록 최종 확인</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">퇴근 전 오늘 기록을 확인하세요</div>
+    ${stepBarHTML(0,['기록 확인','최종 제출','퇴근 처리'])}
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title"><i class="ti ti-clipboard-check" style="color:#534AB7"></i> 오늘 방문 기록 요약</div>
+      ${visits.map((v,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<2?'border-bottom:1px solid #f5f5f5':''}">
+        <div class="avatar" style="width:32px;height:32px;background:#E1F5EE;color:#0F6E56;font-size:11px">${v.rec.slice(0,2)}</div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#222">${v.rec} 어르신</div><div style="font-size:10px;color:#aaa;margin-top:1px">${v.time}</div></div>
+        <span class="chip" style="background:${v.sent?'#E1F5EE':'#FAEEDA'};color:${v.sent?'#0F6E56':'#854F0B'};font-size:10px">${v.status}</span>
+      </div>`).join('')}
+    </div>
+    <div style="background:#FAEEDA;border-radius:10px;padding:10px 13px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start">
+      <i class="ti ti-alert-circle" style="font-size:14px;color:#BA7517;margin-top:1px;flex-shrink:0"></i>
+      <div style="font-size:11px;color:#854F0B;line-height:1.6"><b>최○○ 어르신 보고서 미전송</b><br>기록 탭에서 전송 후 퇴근하시거나, 관리자에게 전달해주세요.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="setWTab('records')" style="flex:1;padding:10px;background:#fff;color:#534AB7;border:1.5px solid #7F77DD;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">기록 전송하기</button>
+      <button onclick="G.clockOutStep=1;renderW()" style="flex:2;padding:10px;background:#534AB7;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">최종 제출로 이동 →</button>
+    </div>
+  </div>`;
+}
+function buildCO1(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:#534AB7;margin-bottom:4px">최종 저장 및 제출</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:18px">오늘 모든 기록을 서버에 저장합니다</div>
+    ${stepBarHTML(1,['기록 확인','최종 제출','퇴근 처리'])}
+    <div class="card" style="margin-bottom:12px">
+      ${[['총 방문 건수','3건'],['AI 보고서 제출','2건 완료 / 1건 미전송'],['AI 음성 변환','18건'],['민감정보 마스킹','3건'],['근무 시간','09:00 ~ (퇴근 시간 기록 예정)']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:12px"><span style="color:#888">${k}</span><span style="font-weight:600;color:#333">${v}</span></div>`).join('')}
+    </div>
+    <div style="background:#E1F5EE;border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:11px;color:#0F6E56;line-height:1.6">
+      <i class="ti ti-lock" style="font-size:13px"></i> 모든 기록은 암호화되어 기관 서버에 안전하게 저장됩니다.
+    </div>
+    <button onclick="G.clockOutStep=2;renderW()" style="width:100%;padding:12px;background:#534AB7;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px"><i class="ti ti-upload"></i> 최종 제출 및 저장</button>
+  </div>`;
+}
+function buildCO2(){
+  return `<div class="ws fade-in" style="display:flex;flex-direction:column;align-items:center;padding:30px 20px">
+    ${stepBarHTML(2,['기록 확인','최종 제출','퇴근 처리'])}
+    <div style="width:64px;height:64px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+      <i class="ti ti-moon" style="font-size:32px;color:#534AB7"></i>
+    </div>
+    <div style="font-size:20px;font-weight:700;color:#534AB7;margin-bottom:6px;letter-spacing:-.5px">수고하셨습니다!</div>
+    <div style="font-size:12px;color:#888;text-align:center;line-height:1.8;margin-bottom:22px">오늘 근무가 모두 종료되었습니다<br>모든 기록이 안전하게 저장됐어요</div>
+    <div style="display:flex;gap:8px;width:100%;margin-bottom:12px">
+      ${[{v:'3건',l:'방문 완료',bg:'#E1F5EE',c:'#0F6E56'},{v:'1:12',l:'총 근무',bg:'#EEEDFE',c:'#534AB7'},{v:'18건',l:'AI 변환',bg:'#E6F1FB',c:'#185FA5'}].map(s=>`<div style="flex:1;background:${s.bg};border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:${s.c}">${s.v}</div><div style="font-size:9px;color:${s.c};opacity:.8;margin-top:1px">${s.l}</div></div>`).join('')}
+    </div>
+    <button onclick="G.clockInStep=-1;G.loggedIn=false;G.clockOutStep=-1;renderW()" style="width:100%;padding:12px;background:#534AB7;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">퇴근 완료</button>
+  </div>`;
+}
+
+/* ══════════════════════════════
+   PROTECTION — ENHANCED with Agent loop
+══════════════════════════════ */
+function buildProt(){
+  return `<div class="ws fade-in">
+    <div style="font-size:17px;font-weight:700;color:${G.pAlert?'#A32D2D':'#085041'};margin-bottom:4px">보호 현황</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:13px">AI 감지 기록 및 증거 영상 관리</div>
+    <div style="background:#f0f8f5;border-radius:12px;padding:12px 14px;margin-bottom:12px;border:1px solid #d0eadf">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#1D9E75" class="pulse-dot"></div>
+        <span style="font-size:13px;font-weight:700;color:#0F6E56">보호 모드 항상 활성</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${[
+          ['microphone','모든 방문 중 항상 음성 녹음'],
+          ['waveform','데시벨 급증·충돌 패턴 실시간 감지'],
+          ['video','임계값 초과 시 카메라 자동 시작 → 영상+음성 동시 기록'],
+          ['lock','수집된 증거는 암호화되어 기관 서버에 저장'],
+        ].map(([ic,txt])=>`<div style="display:flex;gap:7px;align-items:center"><i class="ti ti-${ic}" style="font-size:12px;color:#1D9E75;flex-shrink:0"></i><span style="font-size:11px;color:#555">${txt}</span></div>`).join('')}
+      </div>
+    </div>
+    <div style="background:${G.pAlert?'#E24B4A':'#fff'};border-radius:14px;padding:14px;margin-bottom:13px;display:flex;align-items:center;gap:12px;${G.pAlert?'color:#fff':'border:1px solid #eee'}">
+      <div style="width:44px;height:44px;border-radius:50%;background:${G.pAlert?'rgba(255,255,255,.2)':'#FCEBEB'};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-${G.pAlert?'alert-triangle':'video-off'}" style="font-size:22px;color:${G.pAlert?'#fff':'#E24B4A'}"></i></div>
+      <div><div style="font-size:14px;font-weight:700">${G.pAlert?'충돌 감지 — 영상 수집 시작!':'대기 중 (음성만 녹음)'}</div><div style="font-size:11px;opacity:${G.pAlert?'.85':'1'};color:${G.pAlert?'rgba(255,255,255,.85)':'#aaa'};margin-top:2px">${G.pAlert?'영상+음성 기록 중 · 기관 자동 보고':'임계값 초과 감지 시 자동으로 영상 촬영 전환'}</div></div>
+    </div>
+    ${G.pAlert?`<div class="card" style="border:1.5px solid #F09595;margin-bottom:11px"><div class="card-title"><i class="ti ti-video" style="color:#E24B4A"></i> 현재 수집 중</div><div style="background:#1a1a1a;border-radius:8px;height:68px;display:flex;align-items:center;justify-content:center;margin-bottom:9px"><div style="display:flex;align-items:center;gap:7px;color:#fff;font-size:12px;font-weight:700" class="pulse-dot"><div style="width:8px;height:8px;border-radius:50%;background:#ff5c5c"></div>REC · 00:13</div></div><div style="font-size:11px;color:#555;line-height:1.7">충돌 감지: 오후 2:07 · 기관 자동 보고 중</div></div>`:''}
+    <!-- ENHANCED: Agent reasoning card for protection -->
+    <div id="prot-agent-container"></div>
+    <button onclick="startProtSimulation()" style="width:100%;padding:11px;background:${G.pAlert?'#fff':'#FCEBEB'};color:${G.pAlert?'#0F6E56':'#A32D2D'};border:1.5px solid ${G.pAlert?'#9FE1CB':'#F09595'};border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px">
+      ${G.pAlert?'정상 모드로 초기화':'⚠ 충돌 감지 시뮬레이션 (데모용)'}
+    </button>
+    <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:9px">과거 감지 기록</div>
+    ${PROT.map((p,i)=>`
+    <div style="background:#fff;border-radius:12px;padding:13px;border:1px solid #eee;margin-bottom:9px;cursor:pointer" onclick="toggleVid(${i})">
+      <div style="display:flex;gap:10px;margin-bottom:9px">
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#222">${p.rec} 어르신</div><div style="font-size:10px;color:#aaa;margin-top:2px">${p.date} ${p.time} · ${p.type}</div></div>
+        <span class="chip" style="background:#E1F5EE;color:#0F6E56;font-size:10px">${p.status}</span>
+      </div>
+      <div style="background:#1a1a1a;border-radius:7px;height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:9px" id="vt${i}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff"><i class="ti ti-player-play-filled" style="font-size:18px;opacity:.6"></i><span style="font-size:9px;opacity:.5">증거 ${p.dur}</span></div>
+      </div>
+      <div style="font-size:11px;color:#555;line-height:1.6;background:#f8f8f8;border-radius:8px;padding:8px">
+        <div style="font-size:10px;font-weight:700;color:#1D9E75;margin-bottom:3px"><i class="ti ti-sparkles" style="font-size:10px"></i> AI 대화 요약</div>${p.summary}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function toggleVid(i){const el=document.getElementById('vt'+i);if(el)el.innerHTML=`<div style="font-size:10px;color:#aaa;text-align:center;padding:4px">[보안 인증 후 열람]<br><span style="font-size:9px;opacity:.7">기관 서버 암호화 저장</span></div>`;}
+
+/* ═══ ENHANCED: Protection Agent simulation ═══ */
+function startProtSimulation(){
+  if(G.pAlert){
+    // Reset
+    G.pAlert=false;
+    clearProtTimers();
+    renderW();
+    return;
+  }
+  G.pAlert=true;
+  clearProtTimers();
+  renderW();
+
+  const container=document.getElementById('prot-agent-container');
+  if(!container) return;
+
+  // Show agent reasoning card
+  container.innerHTML=`<div class="prot-agent-card">
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px">
+      🧠 상황 판정 Agent
+      <div class="spin" style="width:12px;height:12px;border:2px solid rgba(255,255,255,.2);border-top:2px solid #fff;border-radius:50%;margin-left:auto" id="prot-spinner"></div>
+    </div>
+    <div id="prot-steps"></div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.5)">
+      <div style="font-weight:600;margin-bottom:3px">Tools:</div>
+      <div id="prot-tools" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+    </div>
+  </div>`;
+
+  const agentSteps=[
+    {delay:0, text:'👁️ dB 급증 감지: 87dB', color:'#ff5c5c', tool:'get_db_levels()', log:'🛡️ 보호 Agent: dB 급증 감지 87dB'},
+    {delay:1500, text:'🎤 최근 30초 전사 확인 중...', color:'#F59E0B', tool:'get_recent_transcript()', log:'🛡️ 보호 Agent: get_recent_transcript() 호출'},
+    {delay:3000, text:'📜 과거 보호 이력 조회...', color:'#3B82F6', tool:'get_protection_history()', log:'🛡️ 보호 Agent: get_protection_history() 호출'},
+    {delay:4500, text:'🧠 판정: 갈등 감지 — 기관 보고 필요', color:'#EF4444', tool:null, log:'🛡️ 보호 Agent: 판정 완료 — 기관 보고'},
+  ];
+
+  agentSteps.forEach((s,i)=>{
+    const t=setTimeout(()=>{
+      const stepsEl=document.getElementById('prot-steps');
+      const toolsEl=document.getElementById('prot-tools');
+      if(!stepsEl) return;
+
+      const step=document.createElement('div');
+      step.className='prot-agent-step agent-step';
+      step.innerHTML=`<span style="color:${s.color}">${s.text}</span>`;
+      stepsEl.appendChild(step);
+
+      if(s.tool && toolsEl){
+        const toolTag=document.createElement('span');
+        toolTag.style.cssText='padding:2px 6px;background:rgba(255,255,255,.15);border-radius:4px;font-size:9px;color:rgba(255,255,255,.7)';
+        toolTag.textContent=s.tool;
+        toolsEl.appendChild(toolTag);
+      }
+
+      addAgentLog(s.log);
+
+      // Remove spinner on last step
+      if(i===agentSteps.length-1){
+        const spinner=document.getElementById('prot-spinner');
+        if(spinner) spinner.outerHTML='<i class="ti ti-check" style="font-size:14px;color:#EF4444;margin-left:auto"></i>';
+      }
+    },s.delay);
+    G.protAgentTimers.push(t);
+  });
+}
+
+/* ══════════════════════════════
+   CORP (inner shell — worker view)
+══════════════════════════════ */
+function buildCorpDashboard(){
+  const kpis=[{ico:'users',l:'요양보호사',v:'48명',sub:'근무중 35명',bg:'#E1F5EE',tc:'#0F6E56'},{ico:'home-heart',l:'수급자',v:'156명',sub:'활성 142명',bg:'#E6F1FB',tc:'#185FA5'},{ico:'file-text',l:'AI 보고서 오늘',v:'29건',sub:'사용률 90.6%',bg:'#EEEDFE',tc:'#534AB7'},{ico:'shield-check',l:'보호 알림',v:'1건',sub:'처리 중',bg:'#FAEEDA',tc:'#854F0B'}];
+  return `<div class="page-hdr"><h2>오늘의 현황</h2><p>2026년 5월 16일 금요일</p></div>
+  <div class="kpi-row">${kpis.map(k=>`<div class="kpi" style="background:${k.bg}"><i class="ti ti-${k.ico}" style="font-size:22px;color:${k.tc};display:block;margin-bottom:7px"></i><div style="font-size:22px;font-weight:700;color:${k.tc}">${k.v}</div><div style="font-size:10px;color:${k.tc};opacity:.75;margin-top:2px">${k.l}</div><div style="font-size:10px;color:${k.tc};opacity:.6;margin-top:2px">${k.sub}</div></div>`).join('')}</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-file-text" style="color:#7F77DD"></i> AI 보고서 제출 현황</div>
+      ${[{l:'AI 보고서',v:29,pct:91,c:'#1D9E75'},{l:'수동 작성',v:3,pct:9,c:'#ccc'}].map(r=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:64px;font-size:11px;color:#666">${r.l}</div><div class="bar-track"><div class="bar-fill" style="width:${r.pct}%;background:${r.c}"></div></div><div style="width:28px;font-size:11px;color:#888;text-align:right">${r.v}건</div></div>`).join('')}
+      <div style="margin-top:9px;font-size:11px;color:#0F6E56;background:#E1F5EE;padding:7px 10px;border-radius:7px"><i class="ti ti-trending-up"></i> AI 사용률 90.6% — 전월 대비 +12%p</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-bell" style="color:#BA7517"></i> 최근 알림</div>
+      ${[{dot:'#E24B4A',msg:'최○○ — 보호 모드 활성화',w:'김민지',t:'14:07'},{dot:'#1D9E75',msg:'이○○ 보고서 — 복지사 공유 완료',w:'김민지',t:'11:45'},{dot:'#378ADD',msg:'이수진 보호사 — 제출률 100%',w:'이수진',t:'10:30'}].map(a=>`<div class="row-item"><div style="width:7px;height:7px;border-radius:50%;background:${a.dot};flex-shrink:0;margin-top:4px"></div><div style="flex:1"><div style="font-size:12px;color:#333">${a.msg}</div><div style="font-size:10px;color:#aaa;margin-top:1px">${a.w} · ${a.t}</div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-sitemap" style="color:#1D9E75"></i> 오늘 보고서 → 팀 공유 현황</div>
+    <div style="display:flex;gap:10px">
+      ${[{l:'AI 보고서 공유',v:'29건',bg:'#E1F5EE',c:'#0F6E56'},{l:'간호사 전달',v:'18건',bg:'#E6F1FB',c:'#185FA5'},{l:'복지사 연계',v:'7건',bg:'#EEEDFE',c:'#534AB7'},{l:'보호자 전달',v:'24건',bg:'#FAEEDA',c:'#854F0B'}].map(s=>`<div style="flex:1;background:${s.bg};border-radius:10px;padding:9px;text-align:center"><div style="font-size:17px;font-weight:700;color:${s.c}">${s.v}</div><div style="font-size:10px;color:${s.c};opacity:.8;margin-top:2px">${s.l}</div></div>`).join('')}
+    </div>
+  </div>`;
+}
+function buildCorpReports(){
+  if(G.corpReportSel!==null) return buildCorpReportDetail();
+  return `<div class="page-hdr"><h2>보고서 수신함</h2><p>요양보호사가 제출한 AI 방문 보고서</p></div>
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">${['전체','미확인','확인'].map(x=>`<button class="filter-btn ${x==='전체'?'active':''}" onclick="filterCReports(this,'${x}')">${x}</button>`).join('')}</div>
+  <div id="cr-list">${corpReportRows(CORP_REPORTS)}</div>`;
+}
+function corpReportRows(list){
+  return list.map((r,idx)=>`
+  <div onclick="G.corpReportSel=${CORP_REPORTS.indexOf(r)};setCorpTab('reports')" style="background:#fff;border-radius:12px;padding:13px;margin-bottom:9px;border:${r.status==='미확인'?'1.5px solid #1D9E75':'1px solid #eee'};cursor:pointer;display:flex;gap:12px;align-items:flex-start">
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:700;color:#222">${r.rec} 어르신</span>
+        <span class="chip" style="background:${r.status==='미확인'?'#E1F5EE':'#f5f5f5'};color:${r.status==='미확인'?'#0F6E56':'#999'}">${r.status}</span>
+        ${r.urgent?`<span class="chip" style="background:#FCEBEB;color:#A32D2D">요주의</span>`:''}
+      </div>
+      <div style="font-size:11px;color:#555;line-height:1.5;margin-bottom:5px">${r.summary}</div>
+      <div style="font-size:10px;color:#aaa">${r.date} · ${r.worker} 보호사</div>
+    </div>
+    <i class="ti ti-chevron-right" style="font-size:14px;color:#ddd;margin-top:2px;flex-shrink:0"></i>
+  </div>`).join('');
+}
+function filterCReports(btn,f){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('cr-list').innerHTML=corpReportRows(f==='전체'?CORP_REPORTS:CORP_REPORTS.filter(r=>r.status===f));
+}
+function buildCorpReportDetail(){
+  const r=CORP_REPORTS[G.corpReportSel];
+  return `
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+    <button onclick="G.corpReportSel=null;setCorpTab('reports')" style="padding:7px 12px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;color:#555;display:flex;align-items:center;gap:5px"><i class="ti ti-arrow-left"></i> 목록</button>
+    <span style="font-size:18px;font-weight:700;color:#085041">${r.rec} 어르신 방문 보고서</span>
+    ${r.urgent?`<span class="chip" style="background:#FCEBEB;color:#A32D2D;margin-left:auto">요주의</span>`:''}
+  </div>
+  <div style="font-size:12px;color:#aaa;margin-bottom:16px">${r.date} · ${r.worker} 보호사 <span class="chip" style="background:#E1F5EE;color:#0F6E56;margin-left:6px"><i class="ti ti-sparkles" style="font-size:10px"></i> AI 작성</span></div>
+  <div class="rsec"><div class="rsec-hdr"><i class="ti ti-user"></i> 1. 대상자 기본 정보</div><div class="rsec-body">${[['수급자 성명',r.rec],['작성자',`요양보호사 ${r.worker}`],['보고 일자',r.date],['방문 시간','11:30~12:42']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}</div></div>
+  <div class="rsec"><div class="rsec-hdr"><i class="ti ti-eye"></i> 2. 신체 및 인지 상태 관찰</div><div class="rsec-body">${[['식사·식욕','식사량 1/2 수준 (식욕 부진 지속)'],['배변·배뇨','특이사항 없음'],['수면','양호'],['인지·정서','우울감 표현 지속 — ★ 주의'],['낙상·통증','이동 보조 필요, 낙상 없음']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval" style="color:${v.includes('주의')?'#A32D2D':'#333'}">${v}</div></div>`).join('')}</div></div>
+  <div class="rsec"><div class="rsec-hdr"><i class="ti ti-heart-handshake"></i> 3. 제공된 요양서비스</div><div class="rsec-body">${[['신체활동','식사 보조, 이동 보조, 체위 변경 2회'],['가사·일상','어르신 방 청소'],['정서 지원','말벗 30분']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}</div></div>
+  <div class="rsec"><div class="rsec-hdr"><i class="ti ti-send"></i> 4. 전달 사항</div><div class="rsec-body">${[['건의사항','식사 보조 스푼 교체 필요'],['특이사항','우울감 지속 → 복지사 연계 검토']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}</div></div>
+  <div style="display:flex;gap:8px;margin-top:4px">
+    <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:13px;cursor:pointer;font-family:inherit">보호자 공유</button>
+    <button style="flex:1;padding:10px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">확인 완료</button>
+  </div>`;
+}
+function buildCorpWorkers(){
+  const f=G.wFilter;
+  const list=f==='전체'?WORKERS:WORKERS.filter(w=>w.status===f);
+  return `<div class="page-hdr"><h2>인력 관리</h2><p>AI 보고서 사용률 포함</p></div>
+  <div style="display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap">${['전체','근무중','대기','휴가'].map(x=>`<button class="filter-btn ${f===x?'active':''}" onclick="G.wFilter='${x}';document.getElementById('corp-workers').innerHTML=buildCorpWorkers()">${x}</button>`).join('')}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${list.map(w=>{const sc=w.status==='근무중'?{bg:'#E1F5EE',c:'#0F6E56'}:w.status==='대기'?{bg:'#FAEEDA',c:'#854F0B'}:{bg:'#f5f5f5',c:'#999'};
+    return `<div class="card" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:9px"><div class="avatar" style="width:38px;height:38px;background:#E1F5EE;color:#0F6E56;font-size:12px">${w.ini}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#222">${w.name}</div><div style="font-size:10px;color:#aaa;margin-top:1px">${w.level}</div></div><span class="chip" style="background:${sc.bg};color:${sc.c}">${w.status}</span></div><div style="display:flex;gap:11px;font-size:11px;align-items:center"><span><span style="color:#aaa">AI보고서 </span><b style="color:#534AB7">${w.ai}</b></span><span><span style="color:#aaa">수급자 </span><b style="color:#0F6E56">${w.cnt}명</b></span><div style="margin-left:auto;display:flex;gap:3px">${w.langs.map(l=>`<span class="tag">${l}</span>`).join('')}</div></div></div>`;}).join('')}
+  </div>`;
+}
+function buildCorpProtection(){
+  return `<div class="page-hdr"><h2>보호 현황</h2><p>AI 감지 폭언·폭행 기록 및 증거 관리</p></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">${[{l:'이달 감지',v:'1건',bg:'#FAEEDA',c:'#854F0B'},{l:'처리 완료율',v:'100%',bg:'#E1F5EE',c:'#0F6E56'},{l:'AI 증거 수집',v:'4건',bg:'#E6F1FB',c:'#185FA5'}].map(s=>`<div class="card" style="margin-bottom:0"><div style="font-size:11px;color:#888;margin-bottom:5px">${s.l}</div><div style="font-size:24px;font-weight:700;color:${s.c}">${s.v}</div></div>`).join('')}</div>
+  <div class="card" style="background:#E1F5EE;border-color:#9FE1CB;margin-bottom:14px"><div class="card-title"><i class="ti ti-shield-check" style="color:#0F6E56"></i> AI 보호 시스템</div><div style="font-size:12px;color:#0F6E56;line-height:1.9">① 음성 실시간 모니터링 → ② 충돌·폭언 감지 → ③ 카메라 자동 시작 → ④ 증거 서버 업로드 → ⑤ 기관 즉시 알림</div></div>
+  <div class="card"><div class="card-title"><i class="ti ti-file-text"></i> 사건 기록</div>${PROT.map(p=>`<div class="row-item"><div style="width:7px;height:7px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:5px"></div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#222">${p.rec} 어르신 — ${p.type}</div><div style="font-size:11px;color:#aaa;margin-top:2px">${p.date} ${p.time} · 증거 ${p.dur}</div><div style="font-size:11px;color:#555;margin-top:3px;line-height:1.5">${p.summary.slice(0,60)}...</div></div><span class="chip" style="background:#E1F5EE;color:#0F6E56;font-size:10px">${p.status}</span></div>`).join('')}</div>`;
+}
+
+/* INIT */
+document.getElementById('corp-dashboard').innerHTML=buildCorpDashboard();
+document.getElementById('corp-reports').innerHTML=buildCorpReports();
+document.getElementById('corp-workers').innerHTML=buildCorpWorkers();
+document.getElementById('corp-protection').innerHTML=buildCorpProtection();
+
+
+/* ══ INIT ══ */
+render();
+G.mode = 'worker';
+const _vw = document.getElementById('view-worker');
+const _vc = document.getElementById('view-corporate');
+if(_vc) _vc.style.display='none';
+if(_vw) _vw.style.display='block';
+</script>
+</body>
+</html>
