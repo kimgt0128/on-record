@@ -1273,6 +1273,7 @@ const DIET_FOOD_DB={
   '잣죽':{tags:['연하위험','알레르기'],pos:{top:'50%',left:'48%'}},
   '견과류':{tags:['알레르기'],pos:{top:'40%',left:'65%'}},
   '과일':{tags:['고당'],pos:{top:'30%',left:'68%'}},
+  '단팥죽':{tags:['고당'],pos:{top:'35%',left:'60%'}},
 };
 const DIET_RULES={
   low_sodium:{label:'저염식',tags:['고나트륨'],level:'중간',tts:f=>f+'가 감지되었습니다. 저염식 대상자에게 주의가 필요합니다.',mp3:'voice/식이_김치_저염.mp3'},
@@ -1311,7 +1312,7 @@ const MY_RECS=[
 function getDietPlate(recIdx){
   const plates=[
     ['밥','미역국','김치','생선구이','나물'],
-    ['밥','미역국','나물','과일'],
+    ['밥','미역국','나물','단팥죽'],
     ['밥','잣죽','나물'],
     ['밥','미역국','견과류','나물'],
   ];
