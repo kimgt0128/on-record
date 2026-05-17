@@ -78,3 +78,5 @@ https://idea-black-two.vercel.app
 ```
 
 After the GitHub repository is connected to Vercel, pull requests should get preview deployments automatically and merges to `main` should update production.
+
+Deployment smoke test: 2026-05-17 20:44:55 KST
