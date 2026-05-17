@@ -3,11 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="멋쟁이사자처럼 아이디어톤 제출용 CareLink AI Agent 돌봄 서비스 데모">
-<meta property="og:title" content="CareLink AI Agent — LIKELION Ideathon Demo">
-<meta property="og:description" content="방문돌봄 기록, 보고서, 보호 이벤트를 보여주는 아이디어톤 제출용 인터랙티브 프로토타입">
-<meta property="og:type" content="website">
-<title>CareLink AI Agent — LIKELION Ideathon Demo</title>
+<title>통합 돌봄 서비스 — 프로토타입 (AI Agent Enhanced)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
@@ -279,7 +275,7 @@ h1.pt{font-size:12px;color:#888;letter-spacing:.5px;font-weight:500}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
-.wave-bar{width:4px;border-radius:3px;background:#1D9E75;transform-origin:bottom}
+.wave-bar{width:4px;border-radius:3px;background:#1D9E75;transform-origin:bottom;transition:background .3s,height .3s}
 .pulse-dot{animation:pulse 1.2s ease-in-out infinite}
 .spin{animation:spin .8s linear infinite}
 .fade-in{animation:fadeIn .25s ease both}
@@ -382,6 +378,41 @@ h1.pt{font-size:12px;color:#888;letter-spacing:.5px;font-weight:500}
   border-radius:10px;padding:9px 12px;margin-bottom:10px;
   border:1px solid #d0d0f0;
 }
+
+/* Diet safety monitor */
+.diet-panel{background:#fff;border:1px solid #e8ebe9;border-radius:14px;padding:12px;margin-bottom:12px}
+.diet-panel-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.diet-plate{
+  background:linear-gradient(145deg,#f5f0e8,#ebe4d8);border-radius:50%;
+  width:100%;aspect-ratio:1;max-width:200px;margin:0 auto 10px;
+  position:relative;border:3px solid #ddd;box-shadow:inset 0 2px 12px rgba(0,0,0,.06);
+}
+.diet-plate-inner{position:absolute;inset:12%;border-radius:50%;background:#faf8f4}
+.diet-food-chip{
+  position:absolute;font-size:9px;font-weight:700;padding:3px 7px;border-radius:8px;
+  white-space:nowrap;transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.12);
+  transition:all .3s ease;
+}
+.diet-food-chip.safe{background:#E1F5EE;color:#0F6E56;border:1px solid #9FE1CB}
+.diet-food-chip.warn{background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
+.diet-food-chip.danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.diet-food-chip.scan{animation:dietScan .8s ease infinite}
+@keyframes dietScan{0%,100%{box-shadow:0 0 0 0 rgba(29,158,117,.4)}50%{box-shadow:0 0 0 6px rgba(29,158,117,0)}}
+.diet-pipe{display:flex;gap:4px;margin-bottom:8px}
+.diet-pipe-step{flex:1;text-align:center;font-size:9px;font-weight:600;padding:5px 2px;border-radius:6px;background:#f5f5f5;color:#aaa}
+.diet-pipe-step.on{background:#E1F5EE;color:#0F6E56}
+.diet-pipe-step.done{background:#0F6E56;color:#fff}
+.diet-alert-high{background:linear-gradient(135deg,#DC2626,#EF4444)!important}
+.diet-alert-mid{background:linear-gradient(135deg,#B45309,#F59E0B)!important}
+.diet-alert-low{background:linear-gradient(135deg,#6B7280,#9CA3AF)!important}
+.diet-scan-btn{
+  width:100%;margin-top:10px;padding:10px 12px;border:none;border-radius:10px;
+  background:#0F6E56;color:#fff;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:opacity .15s,background .15s;
+}
+.diet-scan-btn:disabled{background:#9CA3AF;cursor:not-allowed;opacity:.85}
+.diet-scan-btn:not(:disabled):hover{background:#085041}
 </style>
 </head>
 <body>
@@ -390,8 +421,8 @@ h1.pt{font-size:12px;color:#888;letter-spacing:.5px;font-weight:500}
 <div class="shared-bar">
   <div class="sb-logo-area">
     <div class="sb-logo-icon"><i class="ti ti-heartbeat" style="font-size:14px;color:#fff"></i></div>
-    <span class="sb-logo-name">CareLink AI Agent</span>
-    <span class="sb-logo-sub">LIKELION Ideathon</span>
+    <span class="sb-logo-name">통합 돌봄 서비스</span>
+    <span class="sb-logo-sub">프로토타입</span>
   </div>
   <div class="mode-tabs">
     <button class="mode-tab active" id="tab-corp" onclick="switchMode('corp')">
@@ -410,7 +441,7 @@ h1.pt{font-size:12px;color:#888;letter-spacing:.5px;font-weight:500}
   <div class="sb-logo">
     <div class="sb-logo-icon"><i class="ti ti-heartbeat" style="font-size:16px;color:#fff"></i></div>
     <div>
-      <div class="sb-logo-text">CareLink AI</div>
+      <div class="sb-logo-text">통합 돌봄</div>
       <div class="sb-logo-sub">기관 관리자</div>
     </div>
   </div>
@@ -1198,6 +1229,10 @@ const G={
   recDetailIdx:null,
   corpReportSel:null,
   wFilter:'전체',
+  clEditing:false,   // 체크리스트 수정 모드
+  clEditItem:null,   // 수정 중인 항목 id
+  clCustomItems:[],  // 직접 추가한 항목들
+  addSection:null,   // 추가 폼 열린 섹션
   // ENHANCED: Agent monitor state
   agentMonitorOpen:false,
   agentLogs:[],
@@ -1205,6 +1240,12 @@ const G={
   v1Speaking:false,
   v1ConvShown:0,
   v1Timers:[],
+  medAudio:null,
+  dietPlate:null,dietAlert:null,dietConfirmed:false,dietScanning:false,dietScanDone:false,dietAudio:null,
+  // ENHANCED: Abuse detection AI state
+  abuseDetected:false,
+  abuseTimers:[],
+  camInterval:null,
   // ENHANCED: Protection agent state
   protAgentStep:0,
   protAgentTimers:[],
@@ -1220,30 +1261,82 @@ const WORKERS=[
   {name:'박지연',ini:'박지',status:'휴가',level:'고급',cnt:0,rating:4.9,langs:['한국어'],ai:'99%'},
   {name:'최은영',ini:'최은',status:'근무중',level:'고급',cnt:2,rating:4.7,langs:['한국어'],ai:'94%'},
 ];
+/* ═══ 식이 안전: 음식 태그 · 규칙 엔진 ═══ */
+const DIET_FOOD_DB={
+  '밥':{tags:[],pos:{top:'42%',left:'50%'}},
+  '미역국':{tags:[],pos:{top:'28%',left:'35%'}},
+  '김치':{tags:['고나트륨'],pos:{top:'55%',left:'72%'}},
+  '생선구이':{tags:['단백질'],pos:{top:'38%',left:'22%'}},
+  '나물':{tags:[],pos:{top:'62%',left:'38%'}},
+  '장아찌':{tags:['고나트륨'],pos:{top:'48%',left:'78%'}},
+  '떡볶이':{tags:['고당','연하위험'],pos:{top:'45%',left:'55%'}},
+  '잣죽':{tags:['연하위험','알레르기'],pos:{top:'50%',left:'48%'}},
+  '견과류':{tags:['알레르기'],pos:{top:'40%',left:'65%'}},
+  '과일':{tags:['고당'],pos:{top:'30%',left:'68%'}},
+};
+const DIET_RULES={
+  low_sodium:{label:'저염식',tags:['고나트륨'],level:'중간',tts:f=>f+'가 감지되었습니다. 저염식 대상자에게 주의가 필요합니다.',mp3:'voice/식이_김치_저염.mp3'},
+  diabetes:{label:'당뇨 식이',tags:['고당'],level:'높음',tts:f=>f+'가 감지되었습니다. 당뇨 식이 제한 대상자에게 섭취 전 확인이 필요합니다.',mp3:'voice/식이_단팥죽_당뇨.mp3'},
+  dysphagia:{label:'연하 주의',tags:['연하위험'],level:'높음',tts:f=>f+'가 감지되었습니다. 연하장애 대상자에게 섭취 전 확인이 필요합니다.',mp3:'voice/식이_떡_연하.mp3'},
+  nut_allergy:{label:'견과 알레르기',tags:['알레르기'],level:'높음',tts:()=>'견과류 성분 가능성이 있습니다. 알레르기 정보를 확인하세요.',mp3:'voice/식이_견과_알레르기.mp3'},
+};
 const MY_RECS=[
   {name:'이○○',age:88,level:'2등급',condition:'치매 초기, 고혈압 이력',
-   brief:['지난주 식욕 저하 지속 — 식사량 확인 필요','2주 전 우울감 표현 ("아무것도 하기 싫어")','투약 거부 이력 있음 — 부드럽게 권유'],
+   dietRestrictions:['low_sodium','dysphagia'],dietRestrict:'저염식 · 연하 주의',
+   brief:['지난주 식욕 저하 지속 — 식사량 확인 필요','2주 전 우울감 표현 ("아무것도 하기 싫어")','투약 거부 이력 있음 — 부드럽게 권유','식이: 저염식·연하 — 바디캠 식이 안전 ON'],
    journals:[
      {date:'2026.05.14',time:'11:20~12:38',summary:'식사 2/3 섭취, 산책 20분, 정서 안정, 세탁 완료, 투약 보조',services:['식사 보조','세탁','산책 동행','투약 보조']},
      {date:'2026.05.10',time:'11:15~12:40',summary:'식사 1/2 섭취 (식욕 저하), 우울감 표현, 실내 청소, 체위 변경 2회',services:['식사 보조','청소','체위 변경','정서 지원']},
      {date:'2026.05.07',time:'11:20~12:50',summary:'식사 완료, 목욕 보조, 기분 양호, 손녀 얘기에 밝아지심',services:['목욕 보조','식사 보조','정서 지원']},
    ]},
   {name:'김○○',age:76,level:'3등급',condition:'관절염, 당뇨',
-   brief:['오른쪽 무릎 통증 증가 — 이동 시 주의','식사량 평소 70% 수준 유지'],
+   dietRestrictions:['diabetes'],dietRestrict:'당뇨 식이',
+   brief:['오른쪽 무릎 통증 증가 — 이동 시 주의','식사량 평소 70% 수준 유지','식이: 당뇨 — 고당 음식 주의'],
    journals:[
      {date:'2026.05.14',time:'14:00~15:10',summary:'식사 2/3, 무릎 통증 호소, 이동 보조 강화, 청소 완료',services:['이동 보조','식사 보조','청소']},
    ]},
   {name:'최○○',age:71,level:'4등급',condition:'뇌졸중 후유증',
-   brief:['기분 변동이 있는 편 — 충분한 설명 후 서비스 제공','이동 보조 필요, 아침에 더 활기 있으심'],
+   dietRestrictions:['dysphagia'],dietRestrict:'연하 주의',
+   brief:['기분 변동이 있는 편 — 충분한 설명 후 서비스 제공','이동 보조 필요','식이: 연하 — 질감 확인 필수'],
    journals:[
      {date:'2026.05.10',time:'14:00~15:08',summary:'식사 완료, 목욕 보조, 정서 다소 불안정',services:['목욕 보조','식사 보조','정서 지원']},
    ]},
   {name:'박○○',age:83,level:'3등급',condition:'파킨슨',
-   brief:['낙상 위험 높음 — 이동 시 밀착 보조','가족 방문 후 정서 안정되는 경향'],
+   dietRestrictions:['nut_allergy'],dietRestrict:'견과 알레르기',
+   brief:['낙상 위험 높음 — 이동 시 밀착 보조','식이: 견과류·잣류 금지'],
    journals:[
      {date:'2026.05.12',time:'09:00~10:15',summary:'식사 1/2, 투약 보조, 체위 변경 3회, 낙상 없음',services:['식사 보조','투약 보조','체위 변경']},
    ]},
 ];
+function getDietPlate(recIdx){
+  const plates=[
+    ['밥','미역국','김치','생선구이','나물'],
+    ['밥','미역국','나물','과일'],
+    ['밥','잣죽','나물'],
+    ['밥','미역국','견과류','나물'],
+  ];
+  const names=plates[recIdx]||plates[0];
+  const rec=MY_RECS[recIdx];
+  const restrictions=rec.dietRestrictions||[];
+  return names.map(name=>{
+    const db=DIET_FOOD_DB[name]||{tags:[],pos:{top:'50%',left:'50%'}};
+    let hit=null;
+    for(const rid of restrictions){
+      const rule=DIET_RULES[rid];
+      if(!rule) continue;
+      if(db.tags.some(t=>rule.tags.includes(t))){hit=rule;break;}
+    }
+    const conf=+(0.82+Math.random()*0.14).toFixed(2);
+    if(!hit) return {name,conf,safe:true,level:null,tts:null,mp3:null};
+    return {name,conf,safe:false,level:hit.level,tts:hit.tts(name),rule:hit.label,mp3:hit.mp3||null};
+  });
+}
+function getWorstDietAlert(plate){
+  const order={'높음':3,'중간':2,'낮음':1};
+  const bad=plate.filter(f=>!f.safe);
+  if(!bad.length) return null;
+  return bad.sort((a,b)=>(order[b.level]||0)-(order[a.level]||0))[0];
+}
 const CL_DATA=[
   {section:'신체 및 인지 상태 관찰',items:[
     {id:'c1',text:'식사량 감소 확인 (약 1/2 섭취)',checked:true,src:'AI 감지',warn:false,quote:'"입맛이 없어, 물만..." → 식사량 감소'},
@@ -1261,6 +1354,7 @@ const CL_DATA=[
     {id:'c9',text:'민감정보 1건 자동 마스킹 완료',checked:true,src:'AI 처리',warn:false,quote:'개인정보 보호 Agent가 이름 1건 마스킹'},
     {id:'c10',text:'우울감 지속 — 복지사 연계 권장',checked:true,src:'AI 제안',warn:false,reason:'과거 기록 비교: 2주 연속 우울감 표현 → 연계 권장'},
     {id:'c11',text:'낙상 위험 메모',checked:false,src:'AI 제안',warn:false,hint:'추가 기록을 권장드려요.',reason:'과거 기록에서 이동 보조 필요 반복 — 낙상 위험 메모 권장'},
+    {id:'c12',text:'식이 안전 경고 확인 (바디캠 AI)',checked:false,src:'AI 감지',warn:true,quote:'김치 감지 → 저염식 규칙 매칭 · 보호사 확인 대기'},
   ]},
 ];
 const CONV=[
@@ -1269,6 +1363,7 @@ const CONV=[
   {sp:'보호사',txt:'"제가 방 청소 좀 도와드릴게요"',ai:'주거환경 청결 지원'},
   {sp:'보호사',txt:'"일어서실 때 제 손 잡으세요"',ai:'이동 보조 시행'},
   {sp:'어르신',txt:'"딸이 안 와서 좀 쓸쓸해"',ai:'우울감 징후 기록'},
+  {sp:'어르신',txt:'"저리 가! 건들지 마!!"',ai:'⚠ 고성 감지 — 폭언 파형 분석 시작'},
 ];
 const RECIPS=[
   {id:'manager',name:'기관 관리자',ico:'building',bg:'#E1F5EE',c:'#0F6E56',desc:'기관 표준 보고서 양식'},
@@ -1365,7 +1460,7 @@ function setWTab(t){
   });
   renderW();
 }
-function clearV1Timers(){G.v1Timers.forEach(t=>clearTimeout(t));G.v1Timers=[];G.v1ConvShown=0;G.v1Speaking=false;if('speechSynthesis' in window) window.speechSynthesis.cancel();}
+function clearV1Timers(){G.v1Timers.forEach(t=>clearTimeout(t));G.v1Timers=[];G.v1ConvShown=0;G.v1Speaking=false;G.dietScanning=false;clearAbuseDetection();if(G.medAudio){G.medAudio.pause();G.medAudio.currentTime=0;}if(G.dietAudio){G.dietAudio.pause();G.dietAudio.currentTime=0;}if('speechSynthesis' in window) window.speechSynthesis.cancel();}
 function clearProtTimers(){G.protAgentTimers.forEach(t=>clearTimeout(t));G.protAgentTimers=[];G.protAgentStep=0;}
 
 function renderW(){
@@ -1406,8 +1501,8 @@ function renderW(){
 function buildLogin(){
   if(G.loginStep===0) return `
   <div class="grad-bg">
-    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px;letter-spacing:-.5px">CareLink AI</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:28px">방문돌봄 Agent 플랫폼</div>
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px;letter-spacing:-.5px">CareLink</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:28px">통합 돌봄 서비스 플랫폼</div>
     <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:18px;backdrop-filter:blur(8px)">
       <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.5px;margin-bottom:10px;text-transform:uppercase">소속 기관 선택</div>
       ${INSTS.map((inst,i)=>`<button class="inst-btn ${G.selInst===i?'sel':''}" onclick="G.selInst=${i};renderW()" style="width:100%;padding:10px 14px;background:rgba(255,255,255,${G.selInst===i?.35:.2});border:1.5px solid rgba(255,255,255,${G.selInst===i?.7:.3});border-radius:10px;color:#fff;font-family:inherit;font-size:13px;text-align:left;cursor:pointer;margin-bottom:7px;display:flex;align-items:center;gap:10px;font-weight:500"><i class="ti ti-building" style="opacity:.7"></i>${inst}</button>`).join('')}
@@ -1417,7 +1512,7 @@ function buildLogin(){
   return `
   <div class="grad-bg">
     <div onclick="G.loginStep=0;renderW()" style="display:inline-flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;margin-bottom:20px"><i class="ti ti-arrow-left"></i> ${INSTS[G.selInst]}</div>
-    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px">CareLink AI</div>
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:3px">CareLink</div>
     <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:28px">요양보호사로 로그인</div>
     <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:18px;backdrop-filter:blur(8px)">
       <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.5px;margin-bottom:7px">아이디</div>
@@ -1540,6 +1635,11 @@ function buildHome(){
       ${next.brief.map(a=>`<div style="display:flex;gap:6px;margin-bottom:5px"><i class="ti ti-alert-circle" style="font-size:11px;color:#BA7517;margin-top:2px;flex-shrink:0"></i><div style="font-size:11px;color:#333;line-height:1.5">${a}</div></div>`).join('')}
       <button onclick="G.visitRec=1;setWTab('visit')" style="width:100%;margin-top:8px;padding:8px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-microphone"></i> 방문 시작하기</button>
     </div>
+    <div style="background:#FAEEDA;border-radius:12px;padding:11px;margin-bottom:14px;border:1px solid #FAC775">
+      <div style="font-size:11px;font-weight:700;color:#854F0B;margin-bottom:6px;display:flex;align-items:center;gap:5px"><i class="ti ti-camera"></i> 식이 제한 (바디캠 연동)</div>
+      <div style="font-size:12px;color:#333;line-height:1.6">${next.dietRestrict||'등록된 제한 없음'}</div>
+      <div style="margin-top:6px">${(next.dietRestrictions||[]).map(id=>DIET_RULES[id]?`<span style="display:inline-block;font-size:10px;background:#fff;border:1px solid #FAC775;color:#854F0B;padding:2px 8px;border-radius:8px;margin:2px 4px 0 0;font-weight:600">${DIET_RULES[id].label}</span>`:'').join('')}</div>
+    </div>
     <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:9px">내 수급자 목록</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
       ${MY_RECS.map((r,i)=>`
@@ -1646,6 +1746,70 @@ function buildV1(){
           <span style="font-size:14px">🔇</span>
           <span style="color:rgba(255,255,255,.7)">침묵 감지 — 전사 대기</span>
         </div>
+        <!-- ENHANCED: Abuse detection AI waveform analysis -->
+        <div id="v1-abuse-status" style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.08)">
+          <span style="font-size:14px">🛡️</span>
+          <span style="color:rgba(255,255,255,.5)">파형 분석 AI — 정상 패턴</span>
+          <span style="margin-left:auto;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(29,158,117,.3);color:#5DCAA5">안전</span>
+        </div>
+      </div>
+    </div>
+    <!-- ENHANCED: Abuse Detection AI Model Card -->
+    <div id="v1-abuse-card" style="display:none;background:linear-gradient(135deg,#7F1D1D,#DC2626);border-radius:12px;padding:13px 14px;margin-bottom:11px;color:#fff;animation:agentStepIn .5s ease both">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-alert-triangle" style="font-size:18px"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">⚠ 폭언 패턴 감지</div>
+          <div style="font-size:10px;opacity:.8;margin-top:1px">AI 파형 분석 모델이 고성·폭언 패턴을 감지했습니다</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#ff5c5c" class="pulse-dot"></div>
+      </div>
+      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.7;margin-bottom:8px">
+        <div id="v1-abuse-detail">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="opacity:.8">감지 유형</span><span style="font-weight:600" id="v1-abuse-type">고성 + 위협적 어조</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="opacity:.8">최대 dB</span><span style="font-weight:600" id="v1-abuse-db">87dB</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="opacity:.8">신뢰도</span><span style="font-weight:700;color:#FCA5A5" id="v1-abuse-conf">92.4%</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="opacity:.8">대응</span><span style="font-weight:600" id="v1-abuse-action">📹 카메라 자동 시작</span></div>
+        </div>
+      </div>
+      <div id="v1-abuse-agent-steps" style="font-size:10px;line-height:1.8"></div>
+      <!-- Camera recording simulation — real video -->
+      <div id="v1-abuse-cam" style="display:none;margin-top:10px;background:#0a0a0a;border-radius:8px;overflow:hidden;position:relative">
+        <div style="position:relative">
+          <!-- Actual video feed -->
+          <video id="v1-cam-video" src="voice/폭언영상_final.mp4" muted loop playsinline style="width:100%;display:block;border-radius:8px"></video>
+          <!-- Scan line overlay -->
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.02) 3px,rgba(255,255,255,.02) 4px);pointer-events:none;border-radius:8px"></div>
+          <!-- Corner brackets (viewfinder) -->
+          <div style="position:absolute;top:8px;left:8px;width:16px;height:16px;border-top:2px solid rgba(255,255,255,.5);border-left:2px solid rgba(255,255,255,.5)"></div>
+          <div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-top:2px solid rgba(255,255,255,.5);border-right:2px solid rgba(255,255,255,.5)"></div>
+          <div style="position:absolute;bottom:8px;left:8px;width:16px;height:16px;border-bottom:2px solid rgba(255,255,255,.5);border-left:2px solid rgba(255,255,255,.5)"></div>
+          <div style="position:absolute;bottom:8px;right:8px;width:16px;height:16px;border-bottom:2px solid rgba(255,255,255,.5);border-right:2px solid rgba(255,255,255,.5)"></div>
+          <!-- REC indicator -->
+          <div style="position:absolute;top:10px;left:12px;display:flex;align-items:center;gap:5px">
+            <div style="width:7px;height:7px;border-radius:50%;background:#ff3b3b" class="pulse-dot"></div>
+            <span style="font-size:10px;font-weight:700;color:#ff3b3b;font-family:monospace">REC</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.7);font-family:monospace" id="v1-cam-timer">00:00</span>
+          </div>
+          <!-- Upload status -->
+          <div style="position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:4px">
+            <i class="ti ti-cloud-upload" style="font-size:11px;color:rgba(255,255,255,.5)"></i>
+            <span style="font-size:9px;color:rgba(255,255,255,.5);font-family:monospace" id="v1-cam-upload">서버 업로드 중</span>
+          </div>
+          <!-- Bottom info bar -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:8px 12px;display:flex;justify-content:space-between;align-items:flex-end">
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.5);font-family:monospace">CAM-01 · 바디캠 자동 전환</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.4);font-family:monospace" id="v1-cam-ts">2026.05.16 14:07:23</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div style="width:5px;height:5px;border-radius:50%;background:#4ADE80"></div>
+              <span style="font-size:9px;color:rgba(255,255,255,.4);font-family:monospace">암호화 전송</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card" style="margin-bottom:12px">
@@ -1656,6 +1820,24 @@ function buildV1(){
       <div id="v1-typing" style="padding:5px 0;font-size:10px;color:#bbb;display:none">
         <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 변환 중...
       </div>
+    </div>
+    <div class="diet-panel" id="v1-diet-panel">
+      <div class="diet-panel-hdr">
+        <i class="ti ti-camera" style="font-size:18px;color:#0F6E56"></i>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:#085041">바디캠 · 식이 안전 모니터링</div>
+          <div style="font-size:10px;color:#888;margin-top:1px">제한: ${rec.dietRestrict||'—'}</div>
+        </div>
+        <span id="v1-diet-live" style="font-size:10px;font-weight:700;color:#1D9E75;background:#E1F5EE;padding:3px 8px;border-radius:8px">LIVE</span>
+      </div>
+      <div class="diet-pipe" id="v1-diet-pipe">
+        ${['탐지','분류','태그','규칙','경고'].map((l,i)=>`<div class="diet-pipe-step" data-step="${i}">${l}</div>`).join('')}
+      </div>
+      <div class="diet-plate" id="v1-diet-plate"><div class="diet-plate-inner"></div><div id="v1-diet-chips"></div></div>
+      <div style="font-size:10px;color:#888;text-align:center;margin-top:6px" id="v1-diet-scan-msg">식사 보조 시 아래 버튼으로 식판을 스캔하세요</div>
+      <button type="button" class="diet-scan-btn" id="v1-diet-scan-btn" onclick="onDietScanClick()">
+        <i class="ti ti-scan"></i> 식판 스캔
+      </button>
     </div>
     <!-- ENHANCED: PII Agent badge -->
     <div id="v1-pii-badge" style="background:#f0f8f5;border-radius:10px;padding:9px 12px;margin-bottom:11px;display:flex;gap:8px;align-items:center;border:1px solid #d0eadf">
@@ -1673,6 +1855,23 @@ function buildV1(){
         <div style="font-size:10px;color:#888;margin-top:1px">음성 녹음 중 — 데시벨 급증·충돌 감지 시 영상 자동 시작</div>
       </div>
       <div style="width:8px;height:8px;border-radius:50%;background:#1D9E75" class="pulse-dot"></div>
+    </div>
+    <!-- 식이 안전 경고 (바디캠 AI · 시뮬레이션) -->
+    <div id="v1-diet-alert" style="display:none;background:linear-gradient(135deg,#B45309,#F59E0B);border-radius:12px;padding:13px 14px;margin-bottom:11px;color:#fff;animation:agentStepIn .5s ease both">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-camera" style="font-size:18px"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">🍽 식이 안전 경고</div>
+          <div style="font-size:10px;opacity:.85;margin-top:1px" id="v1-diet-sub">바디캠 · 식판 인식</div>
+        </div>
+        <span class="badge amber" style="background:rgba(0,0,0,.2);color:#fff;border:none" id="v1-diet-level">중간</span>
+      </div>
+      <div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.65" id="v1-diet-msg">음식 인식 결과를 확인 중...</div>
+      <button onclick="confirmDietCheck()" id="v1-diet-btn" style="margin-top:8px;width:100%;padding:8px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">
+        <i class="ti ti-check"></i> 확인 완료
+      </button>
     </div>
     <!-- 복약 알림 카드 (시뮬레이션 중 나타남) -->
     <div id="v1-med-alert" style="display:none;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:12px;padding:13px 14px;margin-bottom:11px;color:#fff;animation:agentStepIn .5s ease both">
@@ -1706,8 +1905,14 @@ function startV1Simulation(){
   clearV1Timers();
   G.v1ConvShown=0;
   G.v1Speaking=false;
+  G.dietPlate=null;
+  G.dietAlert=null;
+  G.dietConfirmed=false;
+  G.dietScanning=false;
+  G.dietScanDone=false;
   addAgentLog('📊 파형분석: 녹음 시작');
   addAgentLog('🔒 PII Agent: 실시간 모니터링 활성');
+  addAgentLog('🍽 식이 Agent: 대기 중 — 「식판 스캔」 버튼으로 시작');
 
   // Cycle: silence(2s) → speaking(3s) → silence → speaking...
   let cycle=0;
@@ -1745,22 +1950,188 @@ function startV1Simulation(){
       },1000);
       G.v1Timers.push(t3);
     }
-    // 복약 알림 at cycle 5
+    // 복약 알림 at cycle 5 (식판 스캔 중이면 잠시 대기)
     if(cycle===5){
       const tMed=setTimeout(()=>{
         if(G.visitStep!==1) return;
+        if(G.dietScanning){
+          const tRetry=setTimeout(()=>{
+            if(G.visitStep===1&&!G.dietScanning) triggerMedicationAlert();
+          },3500);
+          G.v1Timers.push(tRetry);
+          return;
+        }
         triggerMedicationAlert();
       },1200);
       G.v1Timers.push(tMed);
     }
+    // 폭언 파형 감지 AI at cycle 7
+    if(cycle===7){
+      const tAbuse=setTimeout(()=>{
+        if(G.visitStep!==1) return;
+        triggerAbuseDetection();
+      },1000);
+      G.v1Timers.push(tAbuse);
+    }
     cycle++;
-    if(cycle<10){
+    if(cycle<12){
       const t=setTimeout(doCycle, speaking?3000:2000);
       G.v1Timers.push(t);
     }
   }
   const t0=setTimeout(doCycle,500);
   G.v1Timers.push(t0);
+}
+
+/* ═══ 식이 안전: 바디캠 파이프라인 · 규칙 엔진 · TTS (버튼 수동 실행) ═══ */
+function resetDietPanelUI(){
+  const alertEl=document.getElementById('v1-diet-alert');
+  if(alertEl) alertEl.style.display='none';
+  const chips=document.getElementById('v1-diet-chips');
+  if(chips) chips.innerHTML='';
+  document.querySelectorAll('#v1-diet-pipe .diet-pipe-step').forEach(el=>el.classList.remove('on','done'));
+  const scanMsg=document.getElementById('v1-diet-scan-msg');
+  if(scanMsg) scanMsg.textContent='식사 보조 시 아래 버튼으로 식판을 스캔하세요';
+  const scanBtn=document.getElementById('v1-diet-scan-btn');
+  if(scanBtn){
+    scanBtn.disabled=false;
+    scanBtn.innerHTML='<i class="ti ti-scan"></i> 식판 스캔';
+    scanBtn.style.opacity='1';
+  }
+}
+function onDietScanClick(){
+  if(G.visitStep!==1) return;
+  if(G.dietScanning||G.dietScanDone) return;
+  G.dietScanning=true;
+  G.dietConfirmed=false;
+  const scanBtn=document.getElementById('v1-diet-scan-btn');
+  if(scanBtn){
+    scanBtn.disabled=true;
+    scanBtn.innerHTML='<span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;vertical-align:middle"></span> 스캔 중...';
+  }
+  const alertEl=document.getElementById('v1-diet-alert');
+  if(alertEl) alertEl.style.display='none';
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  G.dietPlate=getDietPlate(G.visitRec);
+  G.dietAlert=getWorstDietAlert(G.dietPlate);
+  addAgentLog('🍽 식이 Agent: 식판 스캔 시작 (수동)');
+  runDietPipeline();
+}
+function finishDietScan(){
+  G.dietScanning=false;
+  G.dietScanDone=true;
+  const scanBtn=document.getElementById('v1-diet-scan-btn');
+  if(scanBtn){
+    scanBtn.disabled=true;
+    scanBtn.innerHTML='<i class="ti ti-circle-check"></i> 스캔 완료';
+  }
+}
+function setDietPipeStep(idx,done){
+  document.querySelectorAll('#v1-diet-pipe .diet-pipe-step').forEach((el,i)=>{
+    el.classList.remove('on','done');
+    if(i<idx||(done&&i===idx)) el.classList.add('done');
+    else if(i===idx&&!done) el.classList.add('on');
+  });
+}
+function renderDietChips(upto){
+  const box=document.getElementById('v1-diet-chips');
+  if(!box||!G.dietPlate) return;
+  box.innerHTML='';
+  const items=G.dietPlate.slice(0,upto+1);
+  items.forEach((f,i)=>{
+    const db=DIET_FOOD_DB[f.name]||{pos:{top:'50%',left:'50%'}};
+    const cls=f.safe?'safe':(f.level==='높음'?'danger':'warn');
+    const chip=document.createElement('div');
+    chip.className='diet-food-chip '+cls+(i===upto?' scan':'');
+    chip.style.top=db.pos.top; chip.style.left=db.pos.left;
+    chip.textContent=f.name+(f.safe?'':' !');
+    chip.title=f.safe?'안전':(f.level+' · '+Math.round(f.conf*100)+'%');
+    box.appendChild(chip);
+  });
+}
+function runDietPipeline(){
+  if(!G.dietScanning) return;
+  const rec=MY_RECS[G.visitRec];
+  const scanMsg=document.getElementById('v1-diet-scan-msg');
+  const steps=[
+    {msg:'YOLO: 식판 영역 탐지...',log:'🍽 탐지: 식판 bbox 확보',pipe:0},
+    {msg:'음식 분류 중 (5종)...',log:'🍽 분류: 개별 음식 crop',pipe:1},
+    {msg:'영양·위험 태그 매칭...',log:'🍽 태그: 나트륨·당·연하 태그 연결',pipe:2},
+    {msg:'대상자 식이 규칙 비교...',log:'🍽 규칙: '+rec.dietRestrict+' 대조',pipe:3},
+  ];
+  let i=0;
+  function next(){
+    if(G.visitStep!==1||!G.dietScanning) return;
+    if(i<steps.length){
+      if(scanMsg) scanMsg.textContent=steps[i].msg;
+      setDietPipeStep(steps[i].pipe,false);
+      addAgentLog(steps[i].log);
+      renderDietChips(Math.min(i, G.dietPlate.length-1));
+      i++;
+      const t=setTimeout(next,900);
+      G.v1Timers.push(t);
+      return;
+    }
+    setDietPipeStep(4,true);
+    renderDietChips(G.dietPlate.length-1);
+    document.querySelectorAll('.diet-food-chip.scan').forEach(el=>el.classList.remove('scan'));
+    if(scanMsg) scanMsg.textContent='스캔 완료 · '+G.dietPlate.length+'종 인식';
+    finishDietScan();
+    if(G.dietAlert) showDietVoiceAlert(G.dietAlert);
+    else if(scanMsg) scanMsg.textContent+=' · 위험 음식 없음';
+  }
+  next();
+}
+function showDietVoiceAlert(alert){
+  const rec=MY_RECS[G.visitRec];
+  const alertEl=document.getElementById('v1-diet-alert');
+  if(!alertEl) return;
+  const lvlCls=alert.level==='높음'?'diet-alert-high':alert.level==='중간'?'diet-alert-mid':'diet-alert-low';
+  alertEl.className=alertEl.className.replace(/diet-alert-\w+/g,'')+' '+lvlCls;
+  alertEl.style.display='block';
+  alertEl.scrollIntoView({behavior:'smooth',block:'nearest'});
+  const sub=document.getElementById('v1-diet-sub');
+  const msg=document.getElementById('v1-diet-msg');
+  const lvl=document.getElementById('v1-diet-level');
+  if(sub) sub.textContent='감지: '+alert.name+' · 규칙: '+alert.rule;
+  if(msg) msg.textContent=alert.tts;
+  if(lvl) lvl.textContent=alert.level;
+  const c12=CL_DATA[2].items.find(x=>x.id==='c12');
+  if(c12){c12.text='식이 안전 경고 확인 ('+alert.name+')';c12.quote=alert.name+' → '+alert.rule+' · '+alert.level;}
+  addAgentLog('🍽 식이 Agent: '+alert.name+' → '+alert.level+' 위험');
+  addAgentLog('🔊 TTS: 식이 안전 음성 안내');
+  speakDietWarning(alert.tts, alert.mp3);
+}
+function speakDietWarning(text, mp3File){
+  // mp3 파일이 있으면 우선 재생
+  if(mp3File){
+    if(G.dietAudio){G.dietAudio.pause();G.dietAudio.currentTime=0;}
+    const audio=new Audio(mp3File);
+    G.dietAudio=audio;
+    audio.volume=1.0;
+    audio.onerror=function(){ speakDietWarningFallback(text); };
+    audio.play().catch(()=>speakDietWarningFallback(text));
+    return;
+  }
+  speakDietWarningFallback(text);
+}
+function speakDietWarningFallback(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR'; u.rate=0.92; u.pitch=1.0; u.volume=1.0;
+  setTimeout(()=>{
+    const v=window.speechSynthesis.getVoices().find(x=>x.lang.startsWith('ko'));
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  },200);
+}
+function confirmDietCheck(){
+  G.dietConfirmed=true;
+  G.clChecks['c12']=true;
+  const btn=document.getElementById('v1-diet-btn');
+  if(btn){btn.innerHTML='<i class="ti ti-circle-check"></i> 확인 기록됨';btn.disabled=true;}
+  addAgentLog('🍽 식이 Agent: 보호사 확인 → 체크리스트·보고서 반영');
 }
 
 /* ═══ 복약 시간 알림 (TTS + UI) ═══ */
@@ -1778,37 +2149,36 @@ function triggerMedicationAlert(){
 }
 
 function speakMedicationReminder(){
-  if(!('speechSynthesis' in window)) return;
-  // 이전 발화 중단
-  window.speechSynthesis.cancel();
+  // 이전 재생 중단
+  if(G.medAudio){G.medAudio.pause();G.medAudio.currentTime=0;}
 
-  const rec=MY_RECS[G.visitRec];
-  const msg=new SpeechSynthesisUtterance(
-    `${rec.name} 어르신, 지금 복약 시간입니다. 아모디핀 5밀리그램, 한 알을 물과 함께 복용해 주세요.`
-  );
-  msg.lang='ko-KR';
-  msg.rate=0.9;
-  msg.pitch=1.0;
-  msg.volume=1.0;
+  const audio=new Audio('voice/복약.mp3');
+  G.medAudio=audio;
+  audio.volume=1.0;
 
-  // 한국어 음성 선택 시도
-  const voices=window.speechSynthesis.getVoices();
-  const koVoice=voices.find(v=>v.lang.startsWith('ko'));
-  if(koVoice) msg.voice=koVoice;
-
-  msg.onend=function(){
+  audio.onended=function(){
     const status=document.getElementById('v1-med-status');
     if(status) status.innerHTML='✅ 음성 안내 완료 — 복약 확인 대기';
     addAgentLog('🔊 TTS: 음성 안내 완료');
   };
 
-  // voices가 비동기 로딩될 수 있으므로 약간 지연
-  setTimeout(()=>{
-    const v2=window.speechSynthesis.getVoices();
-    const ko2=v2.find(v=>v.lang.startsWith('ko'));
-    if(ko2) msg.voice=ko2;
-    window.speechSynthesis.speak(msg);
-  },200);
+  audio.onerror=function(){
+    // mp3 로드 실패 시 fallback: 브라우저 TTS
+    if(!('speechSynthesis' in window)) return;
+    const rec=MY_RECS[G.visitRec];
+    const msg=new SpeechSynthesisUtterance(
+      `${rec.name} 어르신, 지금 복약 시간입니다. 아모디핀 5밀리그램, 한 알을 물과 함께 복용해 주세요.`
+    );
+    msg.lang='ko-KR'; msg.rate=0.9;
+    msg.onend=function(){
+      const status=document.getElementById('v1-med-status');
+      if(status) status.innerHTML='✅ 음성 안내 완료 — 복약 확인 대기';
+      addAgentLog('🔊 TTS: 음성 안내 완료 (fallback)');
+    };
+    setTimeout(()=>window.speechSynthesis.speak(msg),200);
+  };
+
+  audio.play().catch(()=>audio.onerror());
 }
 
 function confirmMedication(){
@@ -1868,6 +2238,161 @@ function showNextConvItem(){
   addAgentLog('📋 기록 Agent: "'+c.ai+'" 추출');
 }
 
+/* ═══ ENHANCED: Abuse Detection AI Model — waveform pattern analysis ═══ */
+function triggerAbuseDetection(){
+  if(G.abuseDetected) return;
+  G.abuseDetected=true;
+
+  // 1) 파형 바 색상을 빨강으로 전환 + 진폭 확대
+  for(let i=0;i<20;i++){
+    const b=document.getElementById('wb'+i);
+    if(b){
+      b.style.background='rgba(255,92,92,.9)';
+      b.style.height=(20+Math.random()*30)+'px';
+      b.style.animationDuration=(.15+Math.random()*.2).toFixed(2)+'s';
+    }
+  }
+
+  // 2) 파형 분석 상태 업데이트
+  const abuseStatus=document.getElementById('v1-abuse-status');
+  if(abuseStatus){
+    abuseStatus.style.background='rgba(220,38,38,.25)';
+    abuseStatus.innerHTML=`
+      <span style="font-size:14px">⚠️</span>
+      <span style="color:#FCA5A5;font-weight:700">폭언 패턴 감지 — 파형 이상</span>
+      <span style="margin-left:auto;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(220,38,38,.4);color:#FCA5A5">위험</span>`;
+  }
+
+  addAgentLog('🛡️ 파형AI: dB 급증 감지 (87dB) — 폭언 패턴 분석 시작');
+
+  // 3) 폭언 감지 카드 표시
+  const t1=setTimeout(()=>{
+    if(G.visitStep!==1) return;
+    const card=document.getElementById('v1-abuse-card');
+    if(card){
+      card.style.display='block';
+      card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    addAgentLog('🛡️ 파형AI: 스펙트로그램 분석 → 고성+위협적 어조 패턴 일치 (92.4%)');
+  },800);
+  G.abuseTimers.push(t1);
+
+  // 4) Agent 추론 단계 시뮬레이션
+  const abuseAgentSteps=[
+    {delay:1500, text:'① 파형 스펙트로그램 분석: 고주파 에너지 급증 (3kHz~8kHz 대역)', log:'🛡️ 파형AI: 고주파 에너지 급증 감지'},
+    {delay:2800, text:'② 음성 감정 분류 모델: 분노(anger) 0.89, 공포(fear) 0.07', log:'🛡️ 파형AI: 감정분류 — anger 0.89'},
+    {delay:4000, text:'③ 폭언 키워드 매칭: 위협적 발화 감지 (2개 구간)', log:'🛡️ 파형AI: 위협 키워드 2건 감지'},
+    {delay:5200, text:'④ 종합 판정: 폭언 확정 → 카메라 자동 전환 · 증거 수집 시작', log:'🛡️ 파형AI: 폭언 확정 → 영상 증거 수집 시작', showCam:true},
+    {delay:6500, text:'⑤ 기관 자동 알림 발송 완료', log:'🛡️ 파형AI: 기관 알림 전송 완료'},
+  ];
+
+  abuseAgentSteps.forEach(s=>{
+    const t=setTimeout(()=>{
+      if(G.visitStep!==1) return;
+      const stepsEl=document.getElementById('v1-abuse-agent-steps');
+      if(stepsEl){
+        const step=document.createElement('div');
+        step.className='agent-step';
+        step.style.cssText='color:rgba(255,255,255,.85)';
+        step.textContent=s.text;
+        stepsEl.appendChild(step);
+      }
+      addAgentLog(s.log);
+      // ④ 단계에서 카메라 녹화 시뮬레이션 시작
+      if(s.showCam) startCamSimulation();
+    },s.delay);
+    G.abuseTimers.push(t);
+  });
+
+  // 5) 10초 후 자동 소멸 → 정상 복귀
+  const tDismiss=setTimeout(()=>{
+    if(G.visitStep!==1) return;
+    stopCamSimulation();
+    // 카드 페이드아웃
+    const card=document.getElementById('v1-abuse-card');
+    if(card){card.style.transition='opacity .6s';card.style.opacity='0';setTimeout(()=>{card.style.display='none';card.style.opacity='';},600);}
+    // 파형 바 복원
+    for(let i=0;i<20;i++){
+      const b=document.getElementById('wb'+i);
+      if(b){b.style.background='';b.style.height='';b.style.animationDuration='';}
+    }
+    // 상태 표시 복원
+    const abuseStatus2=document.getElementById('v1-abuse-status');
+    if(abuseStatus2){
+      abuseStatus2.style.background='rgba(255,255,255,.08)';
+      abuseStatus2.innerHTML=`
+        <span style="font-size:14px">🛡️</span>
+        <span style="color:rgba(255,255,255,.5)">파형 분석 AI — 정상 패턴</span>
+        <span style="margin-left:auto;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(29,158,117,.3);color:#5DCAA5">안전</span>`;
+    }
+    addAgentLog('🛡️ 파형AI: 음성 정상화 → 모니터링 복귀');
+    G.abuseDetected=false;
+  },10000);
+  G.abuseTimers.push(tDismiss);
+}
+
+/* ═══ Camera recording simulation ═══ */
+function startCamSimulation(){
+  const cam=document.getElementById('v1-abuse-cam');
+  if(!cam) return;
+  cam.style.display='block';
+  cam.scrollIntoView({behavior:'smooth',block:'nearest'});
+  addAgentLog('📹 바디캠: 자동 전환 — 영상 증거 수집 시작');
+
+  // 비디오 재생 시작
+  const video=document.getElementById('v1-cam-video');
+  if(video){
+    video.currentTime=0;
+    video.play().catch(()=>{});
+  }
+
+  let sec=0;
+  G.camInterval=setInterval(()=>{
+    sec++;
+    const m=String(Math.floor(sec/60)).padStart(2,'0');
+    const s=String(sec%60).padStart(2,'0');
+    const timerEl=document.getElementById('v1-cam-timer');
+    if(timerEl) timerEl.textContent=m+':'+s;
+    // 타임스탬프도 업데이트
+    const tsEl=document.getElementById('v1-cam-ts');
+    if(tsEl){
+      const now=new Date();
+      const hh=String(now.getHours()).padStart(2,'0');
+      const mm=String(now.getMinutes()).padStart(2,'0');
+      const ss=String(now.getSeconds()).padStart(2,'0');
+      tsEl.textContent='2026.05.16 '+hh+':'+mm+':'+ss;
+    }
+    // 업로드 상태 변화
+    const uploadEl=document.getElementById('v1-cam-upload');
+    if(uploadEl){
+      if(sec<=2) uploadEl.textContent='서버 연결 중...';
+      else if(sec<=4) uploadEl.textContent='암호화 전송 중';
+      else uploadEl.textContent='실시간 업로드';
+    }
+  },1000);
+}
+
+function stopCamSimulation(){
+  if(G.camInterval){clearInterval(G.camInterval);G.camInterval=null;}
+  const video=document.getElementById('v1-cam-video');
+  if(video){video.pause();video.currentTime=0;}
+}
+
+function clearAbuseDetection(){
+  G.abuseTimers.forEach(t=>clearTimeout(t));
+  G.abuseTimers=[];
+  G.abuseDetected=false;
+  stopCamSimulation();
+  // 파형 바 색상 복원
+  for(let i=0;i<20;i++){
+    const b=document.getElementById('wb'+i);
+    if(b){
+      b.style.background='';
+      b.style.animationDuration='';
+    }
+  }
+}
+
 /* ═══ ENHANCED buildV2 — AI 분석 중 with Agent reasoning ═══ */
 function buildV2(){
   return `<div class="ws fade-in">
@@ -1891,7 +2416,8 @@ function buildV2(){
             <div class="tool-item" id="v2t0"><i class="ti ti-code" style="font-size:11px"></i> get_transcript()</div>
             <div class="tool-item" id="v2t1"><i class="ti ti-code" style="font-size:11px"></i> get_schedule()</div>
             <div class="tool-item" id="v2t2"><i class="ti ti-code" style="font-size:11px"></i> get_past_records()</div>
-            <div class="tool-item" id="v2t3"><i class="ti ti-code" style="font-size:11px"></i> submit_checklist()</div>
+            <div class="tool-item" id="v2t3"><i class="ti ti-code" style="font-size:11px"></i> match_diet_rules()</div>
+            <div class="tool-item" id="v2t4"><i class="ti ti-code" style="font-size:11px"></i> submit_checklist()</div>
           </div>
         </div>
       </div>
@@ -1905,8 +2431,9 @@ function startV2Simulation(){
     {delay:0, icon:'👁️', text:'전사 텍스트 분석 중...', tool:0, pct:20, log:'📋 기록 Agent: get_transcript() 호출'},
     {delay:1200, icon:'📅', text:'스케줄 대조 중...', tool:1, pct:45, log:'📋 기록 Agent: get_schedule() 호출'},
     {delay:2400, icon:'📊', text:'과거 기록 비교 중...', tool:2, pct:70, log:'📋 기록 Agent: get_past_records() 호출'},
-    {delay:3600, icon:'🧠', text:'누락 항목 추론 중...', tool:-1, pct:90, log:'🧠 기록 Agent: 누락 항목 추론 중'},
-    {delay:4800, icon:'✅', text:'체크리스트 생성 완료', tool:3, pct:100, log:'📋 기록 Agent: submit_checklist() 완료'},
+    {delay:3200, icon:'🍽', text:'식이 안전 규칙 대조...', tool:3, pct:82, log:'🍽 식이 Agent: match_diet_rules()'},
+    {delay:4000, icon:'🧠', text:'누락 항목 추론 중...', tool:-1, pct:90, log:'🧠 기록 Agent: 누락 항목 추론 중'},
+    {delay:5200, icon:'✅', text:'체크리스트 생성 완료', tool:4, pct:100, log:'📋 기록 Agent: submit_checklist() 완료'},
   ];
   steps.forEach((s,i)=>{
     const t=setTimeout(()=>{
@@ -1994,11 +2521,197 @@ function buildV3(){
       }).join('')}
     </div>`).join('')}
     <div style="display:flex;gap:8px;margin-top:6px">
-      <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">내용 수정</button>
+      <button onclick="G.clEditing=true;renderW()" style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit"><i class="ti ti-pencil" style="font-size:12px"></i> 내용 수정</button>
       <button onclick="G.visitStep=4;renderW()" style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">확인 완료 → 보고서 생성</button>
     </div>
   </div>`;
+  // 수정 모드면 edit 화면으로
+  if(G.clEditing) return buildV3Edit();
   return html;
+}
+
+
+/* ═══ V3 EDIT — 체크리스트 내용 수정 화면 ═══ */
+function buildV3Edit(){
+  const editingId = G.clEditItem;
+
+  const sections = CL_DATA.map(sec => ({
+    section: sec.section,
+    items: [...sec.items,
+      ...G.clCustomItems.filter(c => c.section === sec.section)
+    ]
+  }));
+  const knownSections = CL_DATA.map(s => s.section);
+  const orphanCustom = G.clCustomItems.filter(c => !knownSections.includes(c.section));
+  if(orphanCustom.length > 0) sections.push({section:'직접 추가 항목', items: orphanCustom});
+
+  const secIcons = {
+    '신체 및 인지 상태 관찰':'eye',
+    '제공된 요양서비스':'heart-handshake',
+    '특이사항 및 전달사항':'send',
+    '직접 추가 항목':'plus-circle',
+  };
+
+  return `<div class="ws fade-in">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <button onclick="G.clEditing=false;G.clEditItem=null;renderW()"
+        style="width:30px;height:30px;border-radius:50%;background:#f0f0f0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-arrow-left" style="font-size:14px;color:#555"></i>
+      </button>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:#085041">내용 수정</div>
+        <div style="font-size:10px;color:#aaa;margin-top:1px">항목을 탭해서 수정 · 삭제하거나 새 항목을 추가하세요</div>
+      </div>
+    </div>
+    <div style="background:#FAEEDA;border-radius:10px;padding:10px 13px;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start">
+      <i class="ti ti-info-circle" style="font-size:13px;color:#B45309;margin-top:1px;flex-shrink:0"></i>
+      <div style="font-size:11px;color:#854F0B;line-height:1.6">
+        <b>AI가 작성한 초안입니다.</b> 실제와 다른 내용은 수정하고, 빠진 내용은 추가해주세요.
+      </div>
+    </div>
+    ${sections.map(sec => `
+    <div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+        <i class="ti ti-${secIcons[sec.section]||'circle-check'}" style="font-size:15px;color:#1D9E75"></i>
+        <span style="font-size:13px;font-weight:700;color:#333">${sec.section}</span>
+        <span style="font-size:11px;color:#aaa;font-weight:400">${sec.items.length}개</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${sec.items.map(it => {
+          const isEditing = editingId === it.id;
+          const isCustom = G.clCustomItems.some(c => c.id === it.id);
+          const checked = G.clChecks[it.id];
+          const srcBg = it.src==='AI 감지'?'#E1F5EE':it.src==='미기록'||it.src==='미확인'?'#FAEEDA':isCustom?'#EFF6FF':'#EEEDFE';
+          const srcC  = it.src==='AI 감지'?'#0F6E56':it.src==='미기록'||it.src==='미확인'?'#854F0B':isCustom?'#1D4ED8':'#534AB7';
+          return `
+          <div style="background:#fff;border-radius:12px;border:${isEditing?'2px solid #1D9E75':'1px solid #eee'};overflow:hidden;transition:border-color .15s">
+            <div onclick="G.clEditItem=G.clEditItem==='${it.id}'?null:'${it.id}';renderW()"
+              style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer">
+              <div style="width:20px;height:20px;border-radius:6px;background:${checked?'#1D9E75':'#fff'};border:2px solid ${checked?'#1D9E75':'#ddd'};display:flex;align-items:center;justify-content:center;flex-shrink:0"
+                onclick="event.stopPropagation();G.clChecks['${it.id}']=!G.clChecks['${it.id}'];renderW()">
+                ${checked?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':''}
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:${checked?'#222':'#aaa'};line-height:1.5;${checked?'':'text-decoration:line-through'}">${it.text}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:${srcBg};color:${srcC}">
+                  ${isCustom?'직접 추가':it.src}
+                </span>
+                <i class="ti ti-chevron-${isEditing?'up':'down'}" style="font-size:14px;color:#bbb"></i>
+              </div>
+            </div>
+            ${isEditing ? `
+            <div style="padding:0 14px 14px;border-top:1px solid #f0f0f0" onclick="event.stopPropagation()">
+              ${it.quote ? `<div style="background:#E1F5EE;border-radius:8px;padding:9px 11px;margin:10px 0 11px;font-size:11px;color:#0F6E56;display:flex;gap:6px;align-items:flex-start"><i class="ti ti-quote" style="font-size:12px;flex-shrink:0;margin-top:1px"></i><div><b>AI 근거:</b> ${it.quote}</div></div>` : ''}
+              ${it.reason ? `<div style="background:#EEEDFE;border-radius:8px;padding:9px 11px;margin:10px 0 11px;font-size:11px;color:#534AB7;display:flex;gap:6px;align-items:flex-start"><i class="ti ti-bulb" style="font-size:12px;flex-shrink:0;margin-top:1px"></i><div><b>AI 제안 이유:</b> ${it.reason}</div></div>` : ''}
+              ${it.hint ? `<div style="background:#FAEEDA;border-radius:8px;padding:9px 11px;margin:10px 0 11px;font-size:11px;color:#854F0B;display:flex;gap:6px;align-items:flex-start"><i class="ti ti-alert-circle" style="font-size:12px;flex-shrink:0;margin-top:1px"></i><div>${it.hint}</div></div>` : ''}
+              ${!it.quote && !it.reason && !it.hint ? '<div style="height:10px"></div>' : ''}
+              <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">내용 수정</div>
+              <textarea id="edit-${it.id}"
+                style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;font-family:inherit;font-size:13px;line-height:1.65;resize:none;outline:none;background:#fafafa;min-height:68px"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+                onfocus="this.style.borderColor='#1D9E75'"
+                onblur="this.style.borderColor='#ddd'"
+              >${it.text}</textarea>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button onclick="saveEditItem('${it.id}',${isCustom})"
+                  style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">
+                  <i class="ti ti-check" style="font-size:13px"></i> 저장
+                </button>
+                <button onclick="deleteEditItem('${it.id}',${isCustom})"
+                  style="flex:1;padding:10px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">
+                  <i class="ti ti-trash" style="font-size:13px"></i> 삭제
+                </button>
+              </div>
+            </div>` : ''}
+          </div>`;
+        }).join('')}
+        <button onclick="openAddInSection('${sec.section}')"
+          style="width:100%;padding:10px;background:#f8faf8;border:1.5px dashed #c8e0d0;border-radius:11px;color:#1D9E75;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
+          <i class="ti ti-plus" style="font-size:14px"></i> '${sec.section.length>8?sec.section.slice(0,8)+'…':sec.section}'에 항목 추가
+        </button>
+      </div>
+    </div>`).join('')}
+    ${G.addSection ? `
+    <div style="background:#fff;border-radius:12px;border:2px solid #1D9E75;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+        <i class="ti ti-plus" style="color:#1D9E75"></i> '${G.addSection}' 항목 추가
+      </div>
+      <textarea id="add-text" placeholder="추가할 내용을 입력하세요..."
+        style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #1D9E75;font-family:inherit;font-size:13px;line-height:1.65;resize:none;outline:none;min-height:62px;background:#fafafa;margin-bottom:10px"
+        onfocus="this.style.borderColor='#1D9E75'"></textarea>
+      <div style="display:flex;gap:8px">
+        <button onclick="G.addSection=null;renderW()"
+          style="flex:1;padding:10px;background:#fff;color:#888;border:1px solid #ddd;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">취소</button>
+        <button onclick="addCustomItem()"
+          style="flex:2;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">
+          <i class="ti ti-plus"></i> 추가하기
+        </button>
+      </div>
+    </div>` : ''}
+    <button onclick="G.clEditing=false;G.clEditItem=null;G.addSection=null;renderW()"
+      style="width:100%;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px">
+      <i class="ti ti-check"></i> 수정 완료 — 체크리스트로 돌아가기
+    </button>
+  </div>`;
+}
+
+function saveEditItem(id, isCustom) {
+  const ta = document.getElementById('edit-' + id);
+  if (!ta) return;
+  const newText = ta.value.trim();
+  if (!newText) return;
+  if (isCustom) {
+    const item = G.clCustomItems.find(c => c.id === id);
+    if (item) item.text = newText;
+  } else {
+    CL_DATA.forEach(sec => {
+      const item = sec.items.find(it => it.id === id);
+      if (item) item.text = newText;
+    });
+  }
+  G.clEditItem = null;
+  renderW();
+}
+
+function deleteEditItem(id, isCustom) {
+  if (isCustom) {
+    G.clCustomItems = G.clCustomItems.filter(c => c.id !== id);
+  } else {
+    CL_DATA.forEach(sec => {
+      sec.items = sec.items.filter(it => it.id !== id);
+    });
+    delete G.clChecks[id];
+  }
+  G.clEditItem = null;
+  renderW();
+}
+
+function openAddInSection(section) {
+  G.addSection = G.addSection === section ? null : section;
+  G.clEditItem = null;
+  renderW();
+  setTimeout(() => {
+    const ta = document.getElementById('add-text');
+    if (ta) ta.focus();
+  }, 100);
+}
+
+function addCustomItem() {
+  const ta = document.getElementById('add-text');
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) return;
+  const section = G.addSection || (CL_DATA[0] && CL_DATA[0].section) || '기타';
+  const newId = 'custom_' + Date.now();
+  G.clCustomItems.push({
+    id: newId, text, section,
+    src: '직접 추가', checked: true, warn: false
+  });
+  G.clChecks[newId] = true;
+  G.addSection = null;
+  renderW();
 }
 
 function buildV4(){
@@ -2009,7 +2722,7 @@ function buildV4(){
     <div style="font-size:18px;font-weight:700;color:#085041;margin-bottom:6px">방문 완료</div>
     <div style="font-size:12px;color:#888;margin-bottom:18px;text-align:center;line-height:1.7">${rec.name} 어르신 기록 저장 완료<br><span style="color:#1D9E75">기록 탭에서 보고서를 전송하세요</span></div>
     <div style="display:flex;gap:8px;width:100%;margin-bottom:12px">
-      ${[{v:'1:12',l:'방문 시간',bg:'#E1F5EE',c:'#0F6E56'},{v:'11/11',l:'체크 완료',bg:'#EEEDFE',c:'#534AB7'},{v:'1건',l:'마스킹',bg:'#FAEEDA',c:'#854F0B'}].map(s=>`<div style="flex:1;background:${s.bg};border-radius:10px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:700;color:${s.c}">${s.v}</div><div style="font-size:9px;color:${s.c};opacity:.8;margin-top:1px">${s.l}</div></div>`).join('')}
+      ${[{v:'1:12',l:'방문 시간',bg:'#E1F5EE',c:'#0F6E56'},{v:'11/11',l:'체크 완료',bg:'#EEEDFE',c:'#534AB7'},{v:G.dietAlert?'1건':'0건',l:'식이 경고',bg:'#FAEEDA',c:'#854F0B'}].map(s=>`<div style="flex:1;background:${s.bg};border-radius:10px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:700;color:${s.c}">${s.v}</div><div style="font-size:9px;color:${s.c};opacity:.8;margin-top:1px">${s.l}</div></div>`).join('')}
     </div>
     <button onclick="setWTab('records')" style="width:100%;padding:11px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">기록 탭에서 보고서 전송 →</button>
     <button onclick="setWTab('home')" style="width:100%;padding:10px;background:#fff;color:#888;border:1px solid #eee;border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;margin-top:7px">홈으로</button>
@@ -2061,6 +2774,9 @@ function buildReportView(){
     <div class="rsec"><div class="rsec-hdr"><i class="ti ti-send"></i> 4. 전달 사항</div><div class="rsec-body">
       ${[['건의사항','식사 보조 스푼 교체 필요'],['특이사항','우울감 지속 → 복지사 연계 검토']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval">${v}</div></div>`).join('')}
     </div></div>
+    ${G.dietAlert?`<div class="rsec"><div class="rsec-hdr"><i class="ti ti-camera"></i> 식이 안전 (바디캠 AI)</div><div class="rsec-body">
+      ${[['감지 음식',G.dietAlert.name+' (신뢰도 '+Math.round(G.dietAlert.conf*100)+'%)'],['위험 수준',G.dietAlert.level],['매칭 규칙',G.dietAlert.rule],['음성 안내',G.dietAlert.tts],['보호사 확인',G.dietConfirmed?'완료':'—']].map(([k,v])=>`<div class="rrow"><div class="rkey">${k}</div><div class="rval" style="color:${k==='위험 수준'&&G.dietAlert.level==='높음'?'#A32D2D':'#333'}">${v}</div></div>`).join('')}
+    </div></div>`:''}
     <div style="background:#FAEEDA;border-radius:8px;padding:9px 12px;margin-bottom:13px;display:flex;gap:7px;align-items:flex-start"><i class="ti ti-shield-check" style="font-size:13px;color:#BA7517;margin-top:1px"></i><div style="font-size:11px;color:#854F0B">민감정보 1건 자동 마스킹 처리됨</div></div>
     <div style="display:flex;gap:8px">
       <button style="flex:1;padding:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">수정</button>
